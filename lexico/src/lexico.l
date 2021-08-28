@@ -163,11 +163,6 @@ FILTER              "<<"
     columns += yyleng;
 }
 
-"["|"]" {
-    printf("(%d:%d) Angle brackets: "BMAG"%s\n"RESET, line, columns, yytext);
-    columns += yyleng;
-}
-
 "("|")" {
     printf("(%d:%d) Parenthesis: "BMAG"%s\n"RESET, line, columns, yytext);
     columns += yyleng;
