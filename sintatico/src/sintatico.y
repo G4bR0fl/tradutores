@@ -116,8 +116,6 @@ general_declaration:
     general_declaration var_declaration
     | general_declaration list_declaration
     | general_declaration stmt
-    | general_declaration print
-    | general_declaration scan
     | %empty
 ;
 
@@ -143,6 +141,8 @@ stmt:
     | if_else_stmt {printf("stmt -> if_else_stmt\n");}
     | for_stmt {printf("stmt -> for_stmt\n");}
     | return_stmt {printf("stmt -> return_stmt\n");}
+    | print
+    | scan
 ;
 
 
