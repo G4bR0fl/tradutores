@@ -1075,16 +1075,15 @@ YY_RULE_SETUP
 #line 259 "src/lexico.l"
 {
     errors++;
-    printf(BRED"(%d:%d)Unidentified character: '%s'\n" RESET, line, columns, yytext);
     columns += yyleng;
 }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 265 "src/lexico.l"
+#line 264 "src/lexico.l"
 ECHO;
 	YY_BREAK
-#line 1088 "src/lex.yy.c"
+#line 1087 "src/lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2052,5 +2051,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 265 "src/lexico.l"
+#line 264 "src/lexico.l"
 

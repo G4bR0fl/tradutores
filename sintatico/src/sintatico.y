@@ -22,7 +22,6 @@
     struct Token {
         int columns;
         int line;
-        int scope;
         char body[101];
     } token;
 }

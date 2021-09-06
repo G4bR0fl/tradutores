@@ -258,7 +258,6 @@ FILTER              "<<"
 
 . {
     errors++;
-    printf(BRED"(%d:%d)Unidentified character: '%s'\n" RESET, line, columns, yytext);
     columns += yyleng;
 }
 

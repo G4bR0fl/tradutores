@@ -91,11 +91,10 @@ union YYSTYPE
     struct Token {
         int columns;
         int line;
-        int scope;
         char body[101];
     } token;
 
-#line 99 "src/sintatico.tab.h"
+#line 98 "src/sintatico.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
