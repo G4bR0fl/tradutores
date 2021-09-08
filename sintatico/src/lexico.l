@@ -15,6 +15,7 @@
     int line = 1;
     int columns = 1;
     int errors = 0;
+    int scope = 0;
 
 %}
 
@@ -229,6 +230,7 @@ FILTER              "<<"
 
 "{" {
     columns += yyleng;
+    scope++;
     return '{';
 }
 
@@ -258,6 +260,7 @@ FILTER              "<<"
 }
 
 . {
+    printf(BRED"(%d:%d)Unidentified character: '%s'\n" RESET, line, columns, yytext);
     errors++;
     columns += yyleng;
 }

@@ -18,7 +18,11 @@
     void yyerror(const char* a);
     extern FILE* yyin;
 
+    extern int scope;
+    extern symbol symbol_table[100000];
     int table_index = 0;
+    int table_size = 0;
+    
 %}  
 
 %union{
@@ -57,67 +61,98 @@
 
 %%
 program: 
-    declaration_list {printf("program->declaration_list\n");}
+    declaration_list
 ;
 
 declaration_list:
-    declaration_list declaration {printf("declaration_list -> declaration_list declaration\n");}
-    | declaration {printf("declaration_list -> declaration\n");}
+    declaration_list declaration 
+    | declaration
 ;
 
 declaration:
-    var_declaration {printf("declaration -> var_declaration\n");}
-    | function_declaration {printf("declaration -> function_declaration\n");}
-    | list_declaration {printf("declaration -> list_declaration\n");}
+    var_declaration 
+    | function_declaration 
+    | list_declaration 
 ;
 
 var_declaration:
     SIMPLE_TYPE ID ';' {
         // printf("var_declaration -> %s %s ';'\n", $1.body, $2.body);
-        symbol new_symbol = add_symbol($2.line, $2.columns, $2.body, $1.body, 0);
-
-        printf("(%d|%d) - ID: %s TYPE: %s\n", new_symbol.line, new_symbol.column, new_symbol.identifier, new_symbol.type);
-        exit(1);
+        symbol new_symbol = add_symbol($2.line, $2.columns, $2.body, $1.body, 0, scope);
+        symbol_table[table_index] = new_symbol;
+        table_index++;
+        table_size++;
+        
     }
 ;
 
 function_declaration:
-    SIMPLE_TYPE ID '(' params ')' '{' multiple_stmt '}' {printf("function_declaration -> %s %s '(' params ')' '{' multiple_stmt '}'\n", $1.body, $2.body);}
+    SIMPLE_TYPE ID '(' params ')' '{' multiple_stmt '}' {
+        symbol new_symbol = add_symbol($2.line, $2.columns, $2.body, $1.body, 1, scope);
+        symbol_table[table_index] = new_symbol;
+        table_index++;
+        table_size++;
+        
+    }
 ;
 
 list_declaration: 
-    SIMPLE_TYPE LIST_TYPE ID ';' {printf("list_declaration -> %s %s %s ';'\n", $1.body, $2.body, $3.body);}
-    | SIMPLE_TYPE LIST_TYPE ID '(' params ')' '{' multiple_stmt '}' {printf("list_declaration -> %s %s %s '(' params ')' '{' multiple_stmt '}'\n",
-                                                                            $1.body, $2.body, $3.body);}
+    SIMPLE_TYPE LIST_TYPE ID ';' {
+        char str_simple_type[50];
+        char str_list_type[50];
+        char list_string[101];
+        strcpy(str_simple_type, $1.body);
+        strcat(str_simple_type, "\x20");
+        strcpy(str_list_type, $2.body);
+        strcpy(list_string, strcat(str_simple_type, str_list_type));
+        symbol new_symbol = add_symbol($3.line, $3.columns, $3.body, list_string, 0, scope);
+        symbol_table[table_index] = new_symbol;
+        table_index++;
+        table_size++;
+       
+    }
+    | SIMPLE_TYPE LIST_TYPE ID '(' params ')' '{' multiple_stmt '}' {
+        char str_simple_type[50];
+        char str_list_type[50];
+        char list_string[101];
+        strcpy(str_simple_type, $1.body);
+        strcat(str_simple_type, "\x20");
+        strcpy(str_list_type, $2.body);
+        strcpy(list_string, strcat(str_simple_type, str_list_type));
+        symbol new_symbol = add_symbol($3.line, $3.columns, $3.body, list_string, 1, scope);
+        symbol_table[table_index] = new_symbol;
+        table_index++;
+        table_size++;
+        
+    }
 ;
 
 params:
-    params ',' param {printf(" params -> params ',' param\n");} 
-    | param {printf("params -> param\n");}
+    params ',' param
+    | param
     | %empty
 ;
 
 param:
-    SIMPLE_TYPE ID {printf("param -> %s %s\n", $1.body, $2.body);}
+    SIMPLE_TYPE ID 
 ;
 
 if_stmt:
-    IF '(' expression ')' '{' multiple_stmt '}' {printf("if_stmt -> %s '(' expression_stmt ')' '{' stmt '}'\n", 
-                                                    $1.body);}
+    IF '(' expression ')' '{' multiple_stmt '}' 
 ;
 
 if_else_stmt: 
-    IF '(' expression ')' '{' multiple_stmt '}' ELSE '{' multiple_stmt '}' {printf("if_else_stmt -> %s '(' expression_stmt ')' '{' stmt '}' ELSE '{' stmt '}'\n", $1.body);} 
+    IF '(' expression ')' '{' multiple_stmt '}' ELSE '{' multiple_stmt '}' 
     | IF '(' expression ')' '{' multiple_stmt '}' ELSE stmt
 ;
 
 for_stmt:
-    FOR '(' expression ';' expression ';' expression')' '{' multiple_stmt '}' {printf("for_stmt -> %s '(' expression_stmt ')' '{' stmt '}'\n", $1.body);}
+    FOR '(' expression ';' expression ';' expression')' '{' multiple_stmt '}'
 ;
 
 return_stmt:
-    RETURN ';' {printf("return_stmt -> %s ';'\n", $1.body);}
-    | RETURN expression ';' {printf("return_stmt -> %s expression ';'\n", $1.body);}
+    RETURN ';' 
+    | RETURN expression ';'
 ;
 
 general_declaration:
@@ -128,75 +163,75 @@ general_declaration:
 ;
 
 multiple_stmt:
-    general_declaration {printf("multiple_stmt -> general_declaration\n");}
+    general_declaration 
 ;
 
 expression_stmt:
-    expression ';' {printf("expression_stmt -> expression ';'\n");}
+    expression ';' 
 ;
 
 expression:
-    ID '=' expression {printf("expression -> %s '=' expression\n", $1.body);}
-    | simple_expression {printf("expression -> simple_expression\n");}
-    |binary_construct {printf("expression -> binary_construct\n");}
+    ID '=' expression 
+    | simple_expression 
+    |binary_construct
     | ID MAP ID
     | ID FILTER ID
 ;
 
 stmt:
-    expression_stmt {printf("stmt -> expression_stmt\n");}
-    | if_stmt {printf("stmt -> if_stmt\n");}
-    | if_else_stmt {printf("stmt -> if_else_stmt\n");}
-    | for_stmt {printf("stmt -> for_stmt\n");}
-    | return_stmt {printf("stmt -> return_stmt\n");}
+    expression_stmt
+    | if_stmt 
+    | if_else_stmt 
+    | for_stmt
+    | return_stmt 
     | print
     | scan
 ;
 
 
 simple_expression:
-    arithmetic_expression BINARY_COMP_OP arithmetic_expression {printf("simple_expression -> arithmetic_expression %s arithmetic_expression\n", $2.body);}
-    | arithmetic_expression {printf("simple_expression -> arithmetic_expression\n");}
+    arithmetic_expression BINARY_COMP_OP arithmetic_expression 
+    | arithmetic_expression
 ;   
 
 arithmetic_expression:
-    arithmetic_expression BINARY_BASIC_OP1 term {printf("arithmetic_expression -> arithmetic_expression %s term\n", $2.body);}
-    | BINARY_BASIC_OP1 term {printf("arithmetic_expression -> %s term\n", $1.body);}
+    arithmetic_expression BINARY_BASIC_OP1 term 
+    | BINARY_BASIC_OP1 term 
     | TAIL term
     | HEADER term
-    | term {printf("arithmetic_expression -> term\n");}
+    | term 
 ;
 
 term: 
-    term BINARY_BASIC_OP2 factor {printf("term -> term %s factor\n", $2.body);}
-    | factor {printf("term -> factor\n");}
+    term BINARY_BASIC_OP2 factor
+    | factor
 ;
 
 factor:
-    '(' expression ')' {printf("factor -> '(' expression ')'\n");}
-    | ID {printf("factor -> %s\n", $1.body);}
-    | INT {printf("factor -> %s\n", $1.body);}
-    | FLOAT {printf("factor -> %s\n", $1.body);}
-    | ID '(' ID ')' {printf("factor -> %s '(' %s ')'\n", $1.body, $3.body);}
+    '(' expression ')' 
+    | ID 
+    | INT 
+    | FLOAT 
+    | ID '(' ID ')' 
     | LIST_CONSTANT
 ;
 
 print:
-    OUTPUT '(' STRING ')' ';' {printf("print -> %s '(' %s ')' ';'\n", $1.body, $3.body);}
+    OUTPUT '(' STRING ')' ';' 
     | OUTPUT '(' expression ')' ';'
 ;
 
 scan:
-    INPUT '(' ID ')' ';' {printf("print -> %s '(' %s ')' ';'\n", $1.body, $3.body);}
+    INPUT '(' ID ')' ';' 
 ;
 
 binary_construct:
-    binary_construct_recursive BINARY_CONSTRUCTOR ID {printf("binary_construct -> binary_construct_recursive %s %s\n", $2.body, $3.body);}
+    binary_construct_recursive BINARY_CONSTRUCTOR ID 
 ;
 
 binary_construct_recursive:
-    binary_construct_recursive BINARY_CONSTRUCTOR ID {printf("binary_construct_recursive -> binary_construct_recursive %s %s\n", $2.body, $3.body);}
-    | ID {printf("%s\n", $1.body);}
+    binary_construct_recursive BINARY_CONSTRUCTOR ID 
+    | ID 
 ;
 
 
@@ -223,6 +258,7 @@ int main(int argc, char ** argv) {
     else {
         printf("No input given.\n");
     }
+    print_table(table_size);
     fclose(yyin);    
     yylex_destroy();
     return 0;

@@ -15,6 +15,8 @@ typedef struct Symbol {
     int scope; 
 }symbol;
 
-symbol add_symbol(int line, int column, char* identifier, char* type, int is_function);
+symbol add_symbol(int line, int column, char* identifier, char* type, int is_function, int scope);
+
+void print_table(int size);
 
 #endif
