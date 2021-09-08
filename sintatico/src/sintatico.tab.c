@@ -72,7 +72,8 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>    
-    
+    #include "../lib/tabela.h"
+
     #define BRED "\e[0;31m"
     #define BMAG "\e[1;35m"
     #define RESET "\e[0m"
@@ -85,7 +86,9 @@
     void yyerror(const char* a);
     extern FILE* yyin;
 
-#line 89 "src/sintatico.tab.c"
+    int table_index = 0;
+
+#line 92 "src/sintatico.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -555,13 +558,13 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    57,    57,    61,    62,    66,    67,    68,    72,    76,
-      80,    81,    86,    87,    88,    92,    96,   101,   102,   106,
-     110,   111,   115,   116,   117,   118,   122,   126,   130,   131,
-     132,   133,   134,   138,   139,   140,   141,   142,   143,   144,
-     149,   150,   154,   155,   156,   157,   158,   162,   163,   167,
-     168,   169,   170,   171,   172,   176,   177,   181,   185,   189,
-     190
+       0,    60,    60,    64,    65,    69,    70,    71,    75,    85,
+      89,    90,    95,    96,    97,   101,   105,   110,   111,   115,
+     119,   120,   124,   125,   126,   127,   131,   135,   139,   140,
+     141,   142,   143,   147,   148,   149,   150,   151,   152,   153,
+     158,   159,   163,   164,   165,   166,   167,   171,   172,   176,
+     177,   178,   179,   180,   181,   185,   186,   190,   194,   198,
+     199
 };
 #endif
 
@@ -1713,279 +1716,285 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* program: declaration_list  */
-#line 57 "src/sintatico.y"
+#line 60 "src/sintatico.y"
                      {printf("program->declaration_list\n");}
-#line 1719 "src/sintatico.tab.c"
+#line 1722 "src/sintatico.tab.c"
     break;
 
   case 3: /* declaration_list: declaration_list declaration  */
-#line 61 "src/sintatico.y"
+#line 64 "src/sintatico.y"
                                  {printf("declaration_list -> declaration_list declaration\n");}
-#line 1725 "src/sintatico.tab.c"
+#line 1728 "src/sintatico.tab.c"
     break;
 
   case 4: /* declaration_list: declaration  */
-#line 62 "src/sintatico.y"
+#line 65 "src/sintatico.y"
                   {printf("declaration_list -> declaration\n");}
-#line 1731 "src/sintatico.tab.c"
+#line 1734 "src/sintatico.tab.c"
     break;
 
   case 5: /* declaration: var_declaration  */
-#line 66 "src/sintatico.y"
+#line 69 "src/sintatico.y"
                     {printf("declaration -> var_declaration\n");}
-#line 1737 "src/sintatico.tab.c"
+#line 1740 "src/sintatico.tab.c"
     break;
 
   case 6: /* declaration: function_declaration  */
-#line 67 "src/sintatico.y"
+#line 70 "src/sintatico.y"
                            {printf("declaration -> function_declaration\n");}
-#line 1743 "src/sintatico.tab.c"
+#line 1746 "src/sintatico.tab.c"
     break;
 
   case 7: /* declaration: list_declaration  */
-#line 68 "src/sintatico.y"
+#line 71 "src/sintatico.y"
                        {printf("declaration -> list_declaration\n");}
-#line 1749 "src/sintatico.tab.c"
+#line 1752 "src/sintatico.tab.c"
     break;
 
   case 8: /* var_declaration: SIMPLE_TYPE ID ';'  */
-#line 72 "src/sintatico.y"
-                       {printf("var_declaration -> %s %s ';'\n", (yyvsp[-2].token).body, (yyvsp[-1].token).body);}
-#line 1755 "src/sintatico.tab.c"
+#line 75 "src/sintatico.y"
+                       {
+        // printf("var_declaration -> %s %s ';'\n", $1.body, $2.body);
+        symbol new_symbol = add_symbol((yyvsp[-1].token).line, (yyvsp[-1].token).columns, (yyvsp[-1].token).body, (yyvsp[-2].token).body, 0);
+
+        printf("(%d|%d) - ID: %s TYPE: %s\n", new_symbol.line, new_symbol.column, new_symbol.identifier, new_symbol.type);
+        exit(1);
+    }
+#line 1764 "src/sintatico.tab.c"
     break;
 
   case 9: /* function_declaration: SIMPLE_TYPE ID '(' params ')' '{' multiple_stmt '}'  */
-#line 76 "src/sintatico.y"
+#line 85 "src/sintatico.y"
                                                         {printf("function_declaration -> %s %s '(' params ')' '{' multiple_stmt '}'\n", (yyvsp[-7].token).body, (yyvsp[-6].token).body);}
-#line 1761 "src/sintatico.tab.c"
+#line 1770 "src/sintatico.tab.c"
     break;
 
   case 10: /* list_declaration: SIMPLE_TYPE LIST_TYPE ID ';'  */
-#line 80 "src/sintatico.y"
+#line 89 "src/sintatico.y"
                                  {printf("list_declaration -> %s %s %s ';'\n", (yyvsp[-3].token).body, (yyvsp[-2].token).body, (yyvsp[-1].token).body);}
-#line 1767 "src/sintatico.tab.c"
+#line 1776 "src/sintatico.tab.c"
     break;
 
   case 11: /* list_declaration: SIMPLE_TYPE LIST_TYPE ID '(' params ')' '{' multiple_stmt '}'  */
-#line 81 "src/sintatico.y"
+#line 90 "src/sintatico.y"
                                                                     {printf("list_declaration -> %s %s %s '(' params ')' '{' multiple_stmt '}'\n",
                                                                             (yyvsp[-8].token).body, (yyvsp[-7].token).body, (yyvsp[-6].token).body);}
-#line 1774 "src/sintatico.tab.c"
+#line 1783 "src/sintatico.tab.c"
     break;
 
   case 12: /* params: params ',' param  */
-#line 86 "src/sintatico.y"
+#line 95 "src/sintatico.y"
                      {printf(" params -> params ',' param\n");}
-#line 1780 "src/sintatico.tab.c"
+#line 1789 "src/sintatico.tab.c"
     break;
 
   case 13: /* params: param  */
-#line 87 "src/sintatico.y"
+#line 96 "src/sintatico.y"
             {printf("params -> param\n");}
-#line 1786 "src/sintatico.tab.c"
+#line 1795 "src/sintatico.tab.c"
     break;
 
   case 15: /* param: SIMPLE_TYPE ID  */
-#line 92 "src/sintatico.y"
+#line 101 "src/sintatico.y"
                    {printf("param -> %s %s\n", (yyvsp[-1].token).body, (yyvsp[0].token).body);}
-#line 1792 "src/sintatico.tab.c"
+#line 1801 "src/sintatico.tab.c"
     break;
 
   case 16: /* if_stmt: IF '(' expression ')' '{' multiple_stmt '}'  */
-#line 96 "src/sintatico.y"
+#line 105 "src/sintatico.y"
                                                 {printf("if_stmt -> %s '(' expression_stmt ')' '{' stmt '}'\n", 
                                                     (yyvsp[-6].token).body);}
-#line 1799 "src/sintatico.tab.c"
+#line 1808 "src/sintatico.tab.c"
     break;
 
   case 17: /* if_else_stmt: IF '(' expression ')' '{' multiple_stmt '}' ELSE '{' multiple_stmt '}'  */
-#line 101 "src/sintatico.y"
+#line 110 "src/sintatico.y"
                                                                            {printf("if_else_stmt -> %s '(' expression_stmt ')' '{' stmt '}' ELSE '{' stmt '}'\n", (yyvsp[-10].token).body);}
-#line 1805 "src/sintatico.tab.c"
+#line 1814 "src/sintatico.tab.c"
     break;
 
   case 19: /* for_stmt: FOR '(' expression ';' expression ';' expression ')' '{' multiple_stmt '}'  */
-#line 106 "src/sintatico.y"
+#line 115 "src/sintatico.y"
                                                                               {printf("for_stmt -> %s '(' expression_stmt ')' '{' stmt '}'\n", (yyvsp[-10].token).body);}
-#line 1811 "src/sintatico.tab.c"
+#line 1820 "src/sintatico.tab.c"
     break;
 
   case 20: /* return_stmt: RETURN ';'  */
-#line 110 "src/sintatico.y"
+#line 119 "src/sintatico.y"
                {printf("return_stmt -> %s ';'\n", (yyvsp[-1].token).body);}
-#line 1817 "src/sintatico.tab.c"
+#line 1826 "src/sintatico.tab.c"
     break;
 
   case 21: /* return_stmt: RETURN expression ';'  */
-#line 111 "src/sintatico.y"
+#line 120 "src/sintatico.y"
                             {printf("return_stmt -> %s expression ';'\n", (yyvsp[-2].token).body);}
-#line 1823 "src/sintatico.tab.c"
+#line 1832 "src/sintatico.tab.c"
     break;
 
   case 26: /* multiple_stmt: general_declaration  */
-#line 122 "src/sintatico.y"
+#line 131 "src/sintatico.y"
                         {printf("multiple_stmt -> general_declaration\n");}
-#line 1829 "src/sintatico.tab.c"
+#line 1838 "src/sintatico.tab.c"
     break;
 
   case 27: /* expression_stmt: expression ';'  */
-#line 126 "src/sintatico.y"
+#line 135 "src/sintatico.y"
                    {printf("expression_stmt -> expression ';'\n");}
-#line 1835 "src/sintatico.tab.c"
+#line 1844 "src/sintatico.tab.c"
     break;
 
   case 28: /* expression: ID '=' expression  */
-#line 130 "src/sintatico.y"
+#line 139 "src/sintatico.y"
                       {printf("expression -> %s '=' expression\n", (yyvsp[-2].token).body);}
-#line 1841 "src/sintatico.tab.c"
+#line 1850 "src/sintatico.tab.c"
     break;
 
   case 29: /* expression: simple_expression  */
-#line 131 "src/sintatico.y"
+#line 140 "src/sintatico.y"
                         {printf("expression -> simple_expression\n");}
-#line 1847 "src/sintatico.tab.c"
+#line 1856 "src/sintatico.tab.c"
     break;
 
   case 30: /* expression: binary_construct  */
-#line 132 "src/sintatico.y"
+#line 141 "src/sintatico.y"
                       {printf("expression -> binary_construct\n");}
-#line 1853 "src/sintatico.tab.c"
+#line 1862 "src/sintatico.tab.c"
     break;
 
   case 33: /* stmt: expression_stmt  */
-#line 138 "src/sintatico.y"
+#line 147 "src/sintatico.y"
                     {printf("stmt -> expression_stmt\n");}
-#line 1859 "src/sintatico.tab.c"
+#line 1868 "src/sintatico.tab.c"
     break;
 
   case 34: /* stmt: if_stmt  */
-#line 139 "src/sintatico.y"
+#line 148 "src/sintatico.y"
               {printf("stmt -> if_stmt\n");}
-#line 1865 "src/sintatico.tab.c"
+#line 1874 "src/sintatico.tab.c"
     break;
 
   case 35: /* stmt: if_else_stmt  */
-#line 140 "src/sintatico.y"
+#line 149 "src/sintatico.y"
                    {printf("stmt -> if_else_stmt\n");}
-#line 1871 "src/sintatico.tab.c"
+#line 1880 "src/sintatico.tab.c"
     break;
 
   case 36: /* stmt: for_stmt  */
-#line 141 "src/sintatico.y"
+#line 150 "src/sintatico.y"
                {printf("stmt -> for_stmt\n");}
-#line 1877 "src/sintatico.tab.c"
+#line 1886 "src/sintatico.tab.c"
     break;
 
   case 37: /* stmt: return_stmt  */
-#line 142 "src/sintatico.y"
+#line 151 "src/sintatico.y"
                   {printf("stmt -> return_stmt\n");}
-#line 1883 "src/sintatico.tab.c"
+#line 1892 "src/sintatico.tab.c"
     break;
 
   case 40: /* simple_expression: arithmetic_expression BINARY_COMP_OP arithmetic_expression  */
-#line 149 "src/sintatico.y"
+#line 158 "src/sintatico.y"
                                                                {printf("simple_expression -> arithmetic_expression %s arithmetic_expression\n", (yyvsp[-1].token).body);}
-#line 1889 "src/sintatico.tab.c"
+#line 1898 "src/sintatico.tab.c"
     break;
 
   case 41: /* simple_expression: arithmetic_expression  */
-#line 150 "src/sintatico.y"
+#line 159 "src/sintatico.y"
                             {printf("simple_expression -> arithmetic_expression\n");}
-#line 1895 "src/sintatico.tab.c"
+#line 1904 "src/sintatico.tab.c"
     break;
 
   case 42: /* arithmetic_expression: arithmetic_expression BINARY_BASIC_OP1 term  */
-#line 154 "src/sintatico.y"
+#line 163 "src/sintatico.y"
                                                 {printf("arithmetic_expression -> arithmetic_expression %s term\n", (yyvsp[-1].token).body);}
-#line 1901 "src/sintatico.tab.c"
+#line 1910 "src/sintatico.tab.c"
     break;
 
   case 43: /* arithmetic_expression: BINARY_BASIC_OP1 term  */
-#line 155 "src/sintatico.y"
+#line 164 "src/sintatico.y"
                             {printf("arithmetic_expression -> %s term\n", (yyvsp[-1].token).body);}
-#line 1907 "src/sintatico.tab.c"
+#line 1916 "src/sintatico.tab.c"
     break;
 
   case 46: /* arithmetic_expression: term  */
-#line 158 "src/sintatico.y"
+#line 167 "src/sintatico.y"
            {printf("arithmetic_expression -> term\n");}
-#line 1913 "src/sintatico.tab.c"
+#line 1922 "src/sintatico.tab.c"
     break;
 
   case 47: /* term: term BINARY_BASIC_OP2 factor  */
-#line 162 "src/sintatico.y"
+#line 171 "src/sintatico.y"
                                  {printf("term -> term %s factor\n", (yyvsp[-1].token).body);}
-#line 1919 "src/sintatico.tab.c"
+#line 1928 "src/sintatico.tab.c"
     break;
 
   case 48: /* term: factor  */
-#line 163 "src/sintatico.y"
+#line 172 "src/sintatico.y"
              {printf("term -> factor\n");}
-#line 1925 "src/sintatico.tab.c"
+#line 1934 "src/sintatico.tab.c"
     break;
 
   case 49: /* factor: '(' expression ')'  */
-#line 167 "src/sintatico.y"
+#line 176 "src/sintatico.y"
                        {printf("factor -> '(' expression ')'\n");}
-#line 1931 "src/sintatico.tab.c"
+#line 1940 "src/sintatico.tab.c"
     break;
 
   case 50: /* factor: ID  */
-#line 168 "src/sintatico.y"
+#line 177 "src/sintatico.y"
          {printf("factor -> %s\n", (yyvsp[0].token).body);}
-#line 1937 "src/sintatico.tab.c"
+#line 1946 "src/sintatico.tab.c"
     break;
 
   case 51: /* factor: INT  */
-#line 169 "src/sintatico.y"
+#line 178 "src/sintatico.y"
           {printf("factor -> %s\n", (yyvsp[0].token).body);}
-#line 1943 "src/sintatico.tab.c"
+#line 1952 "src/sintatico.tab.c"
     break;
 
   case 52: /* factor: FLOAT  */
-#line 170 "src/sintatico.y"
+#line 179 "src/sintatico.y"
             {printf("factor -> %s\n", (yyvsp[0].token).body);}
-#line 1949 "src/sintatico.tab.c"
+#line 1958 "src/sintatico.tab.c"
     break;
 
   case 53: /* factor: ID '(' ID ')'  */
-#line 171 "src/sintatico.y"
+#line 180 "src/sintatico.y"
                     {printf("factor -> %s '(' %s ')'\n", (yyvsp[-3].token).body, (yyvsp[-1].token).body);}
-#line 1955 "src/sintatico.tab.c"
+#line 1964 "src/sintatico.tab.c"
     break;
 
   case 55: /* print: OUTPUT '(' STRING ')' ';'  */
-#line 176 "src/sintatico.y"
+#line 185 "src/sintatico.y"
                               {printf("print -> %s '(' %s ')' ';'\n", (yyvsp[-4].token).body, (yyvsp[-2].token).body);}
-#line 1961 "src/sintatico.tab.c"
+#line 1970 "src/sintatico.tab.c"
     break;
 
   case 57: /* scan: INPUT '(' ID ')' ';'  */
-#line 181 "src/sintatico.y"
+#line 190 "src/sintatico.y"
                          {printf("print -> %s '(' %s ')' ';'\n", (yyvsp[-4].token).body, (yyvsp[-2].token).body);}
-#line 1967 "src/sintatico.tab.c"
+#line 1976 "src/sintatico.tab.c"
     break;
 
   case 58: /* binary_construct: binary_construct_recursive BINARY_CONSTRUCTOR ID  */
-#line 185 "src/sintatico.y"
+#line 194 "src/sintatico.y"
                                                      {printf("binary_construct -> binary_construct_recursive %s %s\n", (yyvsp[-1].token).body, (yyvsp[0].token).body);}
-#line 1973 "src/sintatico.tab.c"
+#line 1982 "src/sintatico.tab.c"
     break;
 
   case 59: /* binary_construct_recursive: binary_construct_recursive BINARY_CONSTRUCTOR ID  */
-#line 189 "src/sintatico.y"
+#line 198 "src/sintatico.y"
                                                      {printf("binary_construct_recursive -> binary_construct_recursive %s %s\n", (yyvsp[-1].token).body, (yyvsp[0].token).body);}
-#line 1979 "src/sintatico.tab.c"
+#line 1988 "src/sintatico.tab.c"
     break;
 
   case 60: /* binary_construct_recursive: ID  */
-#line 190 "src/sintatico.y"
+#line 199 "src/sintatico.y"
          {printf("%s\n", (yyvsp[0].token).body);}
-#line 1985 "src/sintatico.tab.c"
+#line 1994 "src/sintatico.tab.c"
     break;
 
 
-#line 1989 "src/sintatico.tab.c"
+#line 1998 "src/sintatico.tab.c"
 
       default: break;
     }
@@ -2210,7 +2219,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 195 "src/sintatico.y"
+#line 204 "src/sintatico.y"
 
 
 void yyerror(const char* msg){

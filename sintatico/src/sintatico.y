@@ -4,7 +4,8 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>    
-    
+    #include "../lib/tabela.h"
+
     #define BRED "\e[0;31m"
     #define BMAG "\e[1;35m"
     #define RESET "\e[0m"
@@ -16,6 +17,8 @@
     extern int yyparse();
     void yyerror(const char* a);
     extern FILE* yyin;
+
+    int table_index = 0;
 %}  
 
 %union{
@@ -69,7 +72,13 @@ declaration:
 ;
 
 var_declaration:
-    SIMPLE_TYPE ID ';' {printf("var_declaration -> %s %s ';'\n", $1.body, $2.body);}
+    SIMPLE_TYPE ID ';' {
+        // printf("var_declaration -> %s %s ';'\n", $1.body, $2.body);
+        symbol new_symbol = add_symbol($2.line, $2.columns, $2.body, $1.body, 0);
+
+        printf("(%d|%d) - ID: %s TYPE: %s\n", new_symbol.line, new_symbol.column, new_symbol.identifier, new_symbol.type);
+        exit(1);
+    }
 ;
 
 function_declaration:

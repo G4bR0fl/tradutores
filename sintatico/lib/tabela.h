@@ -1,20 +1,20 @@
-#ifndef TABELA
-#define TABELA
+#ifndef _TABELA_H_
+#define _TABELA_H_
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 
 typedef struct Symbol {
     int line;
-    int columns;
+    int column;
+    int is_function;
     char type[100];
-    int func_type; 
-    int scope;
-    int id_or_cte;
-    char body[100];
-
+    char identifier[100];
+    int scope; 
 }symbol;
 
-typedef struct List{
-    list* list;
-    int amount;
-}list;
+symbol add_symbol(int line, int column, char* identifier, char* type, int is_function);
 
 #endif

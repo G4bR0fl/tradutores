@@ -1,24 +1,31 @@
+float modify_occurences(float i) {
+	return i + 3.2;
+}
+
+float gt_n(float n) {
+	int x;
+	return x > n;
+}
+
 int main(int a){
     int i;
     i = 2;
-    writeln("V3m c0m1g0 \r\\r//**//p4e");
+    writeln("V3m c0m1G0 \t\r\\r//*\t*//m3u P4e\t//");
     int n;
-	float list FL10;
-	read(n);
-	
-	IL  = read_list(n);
-	FL = succ >> IL;
-
-	FL10 = leq_10 <<  FL;
-	if (FL10 != NIL) {
-		float list AUXL;
-		int n; n = 0;
-		for (AUXL=FL10; AUXL != NIL; AUXL = !AUXL) {
+	float list float_list;
+	read(list_elements);
+	float_list = list_elements : float_list;
+	FL = modify_occurences >> float_list;
+	float_list = gt_n <<  FL;
+	if (float_list != NIL) {
+		float list aux_list;
+		int n; 
+		n = 0;
+		for (aux_list=float_list; aux_list != NIL; aux_list = !aux_list) {
 			n = n + 1;
-			write(?AUXL); write(" ");
+			write(%aux_list); write("\n"); write(?aux_list);
 		}
-		writeln(" ");
-		write("A nova lista tem "); write(n); writeln(" !?*@#//\t\r\x22C4rr1ag\x31r\%//*/.");
 	}
+	writeln(" !?*@#//\t\r\x22C4rr1ag\x31r\%//*/."); writeln("\n");
     return 1;
 }

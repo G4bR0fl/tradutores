@@ -6,6 +6,7 @@
     #include <stdlib.h>
     #include <string.h>
     #include "sintatico.tab.h"
+    #include "../lib/tabela.h"
 
     #define BRED "\e[0;31m"
     #define BMAG "\e[1;35m"
