@@ -12,10 +12,11 @@
 
     extern int line;
     extern int columns;
+    extern int errors;
     extern int yylex();
     extern int yylex_destroy();
     extern int yyparse();
-    void yyerror(const char* a);
+    void yyerror(const char* msg);
     extern FILE* yyin;
 
     extern int scope;
@@ -73,6 +74,7 @@ declaration:
     var_declaration 
     | function_declaration 
     | list_declaration 
+    | error {yyerrok;}
 ;
 
 var_declaration:
@@ -82,7 +84,6 @@ var_declaration:
         symbol_table[table_index] = new_symbol;
         table_index++;
         table_size++;
-        
     }
 ;
 
@@ -91,8 +92,7 @@ function_declaration:
         symbol new_symbol = add_symbol($2.line, $2.columns, $2.body, $1.body, 1, scope);
         symbol_table[table_index] = new_symbol;
         table_index++;
-        table_size++;
-        
+        table_size++;   
     }
 ;
 
@@ -176,6 +176,7 @@ expression:
     |binary_construct
     | ID MAP ID
     | ID FILTER ID
+    | error {yyerrok;}
 ;
 
 stmt:
@@ -186,6 +187,7 @@ stmt:
     | return_stmt 
     | print
     | scan
+    | error {yyerrok;}
 ;
 
 
@@ -232,6 +234,7 @@ binary_construct:
 binary_construct_recursive:
     binary_construct_recursive BINARY_CONSTRUCTOR ID 
     | ID 
+    | error {yyerrok;}
 ;
 
 
@@ -242,6 +245,7 @@ void yyerror(const char* msg){
     printf(BRED"(%d|%d) ", line, columns);
     printf("Erro sintatico: ");
     printf("%s\n"RESET, msg);
+    errors++;
 }
 
 int main(int argc, char ** argv) {
