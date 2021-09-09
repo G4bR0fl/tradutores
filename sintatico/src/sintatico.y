@@ -131,6 +131,7 @@ params:
     params ',' param
     | param
     | %empty
+    | error {yyerrok;}
 ;
 
 param:
