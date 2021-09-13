@@ -568,13 +568,13 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    95,    95,   104,   105,   109,   110,   111,   112,   112,
-     116,   125,   134,   148,   165,   166,   167,   168,   172,   176,
-     180,   181,   185,   189,   190,   194,   195,   196,   197,   201,
-     205,   209,   210,   211,   212,   213,   214,   218,   219,   220,
-     221,   222,   223,   224,   225,   230,   231,   235,   236,   237,
-     238,   239,   243,   244,   248,   249,   250,   251,   252,   253,
-     257,   258,   262,   266,   270,   271,   272
+       0,    95,    95,   105,   108,   112,   113,   114,   115,   115,
+     119,   128,   137,   151,   168,   169,   170,   171,   175,   179,
+     183,   184,   188,   192,   193,   197,   198,   199,   200,   204,
+     208,   212,   213,   214,   215,   216,   217,   221,   222,   223,
+     224,   225,   226,   227,   228,   233,   234,   238,   239,   240,
+     241,   242,   246,   247,   251,   252,   253,   254,   255,   256,
+     260,   261,   265,   269,   273,   274,   275
 };
 #endif
 
@@ -1737,80 +1737,83 @@ yyreduce:
   case 2: /* program: declaration_list  */
 #line 95 "src/sintatico.y"
                      { 
-        (yyval.node) = create_node("program");
-        (yyval.node)->next_node = (yyvsp[0].node);
-        main_node = (yyval.node);
-        printf("%s\n", main_node->rule_name);
+        (yyval.node) = create_node();
+        printf("\n");
+        // $$->next_node = $1;
+        // main_node = $$;
+        // printf("%s\n", main_node->rule_name);
     }
-#line 1746 "src/sintatico.tab.c"
+#line 1747 "src/sintatico.tab.c"
     break;
 
   case 3: /* declaration_list: declaration_list declaration  */
-#line 104 "src/sintatico.y"
-                                 {}
-#line 1752 "src/sintatico.tab.c"
+#line 105 "src/sintatico.y"
+                                 {
+        
+    }
+#line 1755 "src/sintatico.tab.c"
     break;
 
   case 4: /* declaration_list: declaration  */
-#line 105 "src/sintatico.y"
+#line 108 "src/sintatico.y"
                   {}
-#line 1758 "src/sintatico.tab.c"
+#line 1761 "src/sintatico.tab.c"
     break;
 
   case 5: /* declaration: var_declaration  */
-#line 109 "src/sintatico.y"
+#line 112 "src/sintatico.y"
                     {}
-#line 1764 "src/sintatico.tab.c"
+#line 1767 "src/sintatico.tab.c"
     break;
 
   case 6: /* declaration: function_declaration  */
-#line 110 "src/sintatico.y"
+#line 113 "src/sintatico.y"
                            {}
-#line 1770 "src/sintatico.tab.c"
+#line 1773 "src/sintatico.tab.c"
     break;
 
   case 7: /* declaration: list_declaration  */
-#line 111 "src/sintatico.y"
+#line 114 "src/sintatico.y"
                        {}
-#line 1776 "src/sintatico.tab.c"
+#line 1779 "src/sintatico.tab.c"
     break;
 
   case 8: /* $@1: %empty  */
-#line 112 "src/sintatico.y"
+#line 115 "src/sintatico.y"
             {yyerrok;}
-#line 1782 "src/sintatico.tab.c"
+#line 1785 "src/sintatico.tab.c"
     break;
 
   case 9: /* declaration: error $@1  */
-#line 112 "src/sintatico.y"
+#line 115 "src/sintatico.y"
                        {}
-#line 1788 "src/sintatico.tab.c"
+#line 1791 "src/sintatico.tab.c"
     break;
 
   case 10: /* var_declaration: SIMPLE_TYPE ID ';'  */
-#line 116 "src/sintatico.y"
+#line 119 "src/sintatico.y"
                        {
         symbol new_symbol = add_symbol((yyvsp[-1].token).line, (yyvsp[-1].token).columns, (yyvsp[-1].token).body, (yyvsp[-2].token).body, 0, scope);
         symbol_table[table_index] = new_symbol;
         table_index++;
         table_size++;
     }
-#line 1799 "src/sintatico.tab.c"
+#line 1802 "src/sintatico.tab.c"
     break;
 
   case 11: /* function_declaration: SIMPLE_TYPE ID '(' params ')' '{' multiple_stmt '}'  */
-#line 125 "src/sintatico.y"
+#line 128 "src/sintatico.y"
                                                         {
         symbol new_symbol = add_symbol((yyvsp[-6].token).line, (yyvsp[-6].token).columns, (yyvsp[-6].token).body, (yyvsp[-7].token).body, 1, scope);
         symbol_table[table_index] = new_symbol;
         table_index++;
         table_size++;   
     }
-#line 1810 "src/sintatico.tab.c"
+#line 1813 "src/sintatico.tab.c"
     break;
 
   case 12: /* list_declaration: SIMPLE_TYPE LIST_TYPE ID ';'  */
-#line 134 "src/sintatico.y"
+#line 137 "src/sintatico.y"
                                  {
         char str_simple_type[50];
         char str_list_type[50];
@@ -1825,11 +1828,11 @@ yyreduce:
         table_size++;
        
     }
-#line 1829 "src/sintatico.tab.c"
+#line 1832 "src/sintatico.tab.c"
     break;
 
   case 13: /* list_declaration: SIMPLE_TYPE LIST_TYPE ID '(' params ')' '{' multiple_stmt '}'  */
-#line 148 "src/sintatico.y"
+#line 151 "src/sintatico.y"
                                                                     {
         char str_simple_type[50];
         char str_list_type[50];
@@ -1844,329 +1847,329 @@ yyreduce:
         table_size++;
         
     }
-#line 1848 "src/sintatico.tab.c"
+#line 1851 "src/sintatico.tab.c"
     break;
 
   case 14: /* params: params ',' param  */
-#line 165 "src/sintatico.y"
+#line 168 "src/sintatico.y"
                      {}
-#line 1854 "src/sintatico.tab.c"
+#line 1857 "src/sintatico.tab.c"
     break;
 
   case 15: /* params: param  */
-#line 166 "src/sintatico.y"
+#line 169 "src/sintatico.y"
             {}
-#line 1860 "src/sintatico.tab.c"
+#line 1863 "src/sintatico.tab.c"
     break;
 
   case 16: /* params: %empty  */
-#line 167 "src/sintatico.y"
+#line 170 "src/sintatico.y"
              {}
-#line 1866 "src/sintatico.tab.c"
+#line 1869 "src/sintatico.tab.c"
     break;
 
   case 17: /* params: error  */
-#line 168 "src/sintatico.y"
+#line 171 "src/sintatico.y"
             {yyerrok;}
-#line 1872 "src/sintatico.tab.c"
+#line 1875 "src/sintatico.tab.c"
     break;
 
   case 18: /* param: SIMPLE_TYPE ID  */
-#line 172 "src/sintatico.y"
+#line 175 "src/sintatico.y"
                    {}
-#line 1878 "src/sintatico.tab.c"
+#line 1881 "src/sintatico.tab.c"
     break;
 
   case 19: /* if_stmt: IF '(' expression ')' '{' multiple_stmt '}'  */
-#line 176 "src/sintatico.y"
+#line 179 "src/sintatico.y"
                                                 {}
-#line 1884 "src/sintatico.tab.c"
+#line 1887 "src/sintatico.tab.c"
     break;
 
   case 20: /* if_else_stmt: IF '(' expression ')' '{' multiple_stmt '}' ELSE '{' multiple_stmt '}'  */
-#line 180 "src/sintatico.y"
+#line 183 "src/sintatico.y"
                                                                            {}
-#line 1890 "src/sintatico.tab.c"
+#line 1893 "src/sintatico.tab.c"
     break;
 
   case 21: /* if_else_stmt: IF '(' expression ')' '{' multiple_stmt '}' ELSE stmt  */
-#line 181 "src/sintatico.y"
+#line 184 "src/sintatico.y"
                                                             {}
-#line 1896 "src/sintatico.tab.c"
+#line 1899 "src/sintatico.tab.c"
     break;
 
   case 22: /* for_stmt: FOR '(' expression ';' expression ';' expression ')' '{' multiple_stmt '}'  */
-#line 185 "src/sintatico.y"
+#line 188 "src/sintatico.y"
                                                                               {}
-#line 1902 "src/sintatico.tab.c"
+#line 1905 "src/sintatico.tab.c"
     break;
 
   case 23: /* return_stmt: RETURN ';'  */
-#line 189 "src/sintatico.y"
+#line 192 "src/sintatico.y"
                {}
-#line 1908 "src/sintatico.tab.c"
+#line 1911 "src/sintatico.tab.c"
     break;
 
   case 24: /* return_stmt: RETURN expression ';'  */
-#line 190 "src/sintatico.y"
+#line 193 "src/sintatico.y"
                             {}
-#line 1914 "src/sintatico.tab.c"
+#line 1917 "src/sintatico.tab.c"
     break;
 
   case 25: /* general_declaration: general_declaration var_declaration  */
-#line 194 "src/sintatico.y"
+#line 197 "src/sintatico.y"
                                         {}
-#line 1920 "src/sintatico.tab.c"
+#line 1923 "src/sintatico.tab.c"
     break;
 
   case 26: /* general_declaration: general_declaration list_declaration  */
-#line 195 "src/sintatico.y"
+#line 198 "src/sintatico.y"
                                            {}
-#line 1926 "src/sintatico.tab.c"
+#line 1929 "src/sintatico.tab.c"
     break;
 
   case 27: /* general_declaration: general_declaration stmt  */
-#line 196 "src/sintatico.y"
+#line 199 "src/sintatico.y"
                                {}
-#line 1932 "src/sintatico.tab.c"
+#line 1935 "src/sintatico.tab.c"
     break;
 
   case 28: /* general_declaration: %empty  */
-#line 197 "src/sintatico.y"
+#line 200 "src/sintatico.y"
              {}
-#line 1938 "src/sintatico.tab.c"
+#line 1941 "src/sintatico.tab.c"
     break;
 
   case 29: /* multiple_stmt: general_declaration  */
-#line 201 "src/sintatico.y"
+#line 204 "src/sintatico.y"
                         {}
-#line 1944 "src/sintatico.tab.c"
+#line 1947 "src/sintatico.tab.c"
     break;
 
   case 30: /* expression_stmt: expression ';'  */
-#line 205 "src/sintatico.y"
+#line 208 "src/sintatico.y"
                    {}
-#line 1950 "src/sintatico.tab.c"
+#line 1953 "src/sintatico.tab.c"
     break;
 
   case 31: /* expression: ID '=' expression  */
-#line 209 "src/sintatico.y"
+#line 212 "src/sintatico.y"
                       {}
-#line 1956 "src/sintatico.tab.c"
+#line 1959 "src/sintatico.tab.c"
     break;
 
   case 32: /* expression: simple_expression  */
-#line 210 "src/sintatico.y"
+#line 213 "src/sintatico.y"
                         {}
-#line 1962 "src/sintatico.tab.c"
+#line 1965 "src/sintatico.tab.c"
     break;
 
   case 33: /* expression: binary_construct  */
-#line 211 "src/sintatico.y"
+#line 214 "src/sintatico.y"
                       {}
-#line 1968 "src/sintatico.tab.c"
+#line 1971 "src/sintatico.tab.c"
     break;
 
   case 34: /* expression: ID MAP ID  */
-#line 212 "src/sintatico.y"
+#line 215 "src/sintatico.y"
                 {}
-#line 1974 "src/sintatico.tab.c"
+#line 1977 "src/sintatico.tab.c"
     break;
 
   case 35: /* expression: ID FILTER ID  */
-#line 213 "src/sintatico.y"
+#line 216 "src/sintatico.y"
                    {}
-#line 1980 "src/sintatico.tab.c"
+#line 1983 "src/sintatico.tab.c"
     break;
 
   case 36: /* expression: error  */
-#line 214 "src/sintatico.y"
+#line 217 "src/sintatico.y"
             {yyerrok;}
-#line 1986 "src/sintatico.tab.c"
+#line 1989 "src/sintatico.tab.c"
     break;
 
   case 37: /* stmt: expression_stmt  */
-#line 218 "src/sintatico.y"
+#line 221 "src/sintatico.y"
                     {}
-#line 1992 "src/sintatico.tab.c"
+#line 1995 "src/sintatico.tab.c"
     break;
 
   case 38: /* stmt: if_stmt  */
-#line 219 "src/sintatico.y"
+#line 222 "src/sintatico.y"
               {}
-#line 1998 "src/sintatico.tab.c"
+#line 2001 "src/sintatico.tab.c"
     break;
 
   case 39: /* stmt: if_else_stmt  */
-#line 220 "src/sintatico.y"
+#line 223 "src/sintatico.y"
                    {}
-#line 2004 "src/sintatico.tab.c"
+#line 2007 "src/sintatico.tab.c"
     break;
 
   case 40: /* stmt: for_stmt  */
-#line 221 "src/sintatico.y"
+#line 224 "src/sintatico.y"
                {}
-#line 2010 "src/sintatico.tab.c"
+#line 2013 "src/sintatico.tab.c"
     break;
 
   case 41: /* stmt: return_stmt  */
-#line 222 "src/sintatico.y"
+#line 225 "src/sintatico.y"
                   {}
-#line 2016 "src/sintatico.tab.c"
+#line 2019 "src/sintatico.tab.c"
     break;
 
   case 42: /* stmt: print  */
-#line 223 "src/sintatico.y"
+#line 226 "src/sintatico.y"
             {}
-#line 2022 "src/sintatico.tab.c"
+#line 2025 "src/sintatico.tab.c"
     break;
 
   case 43: /* stmt: scan  */
-#line 224 "src/sintatico.y"
+#line 227 "src/sintatico.y"
            {}
-#line 2028 "src/sintatico.tab.c"
+#line 2031 "src/sintatico.tab.c"
     break;
 
   case 44: /* stmt: error  */
-#line 225 "src/sintatico.y"
+#line 228 "src/sintatico.y"
             {yyerrok;}
-#line 2034 "src/sintatico.tab.c"
+#line 2037 "src/sintatico.tab.c"
     break;
 
   case 45: /* simple_expression: arithmetic_expression BINARY_COMP_OP arithmetic_expression  */
-#line 230 "src/sintatico.y"
+#line 233 "src/sintatico.y"
                                                                {}
-#line 2040 "src/sintatico.tab.c"
+#line 2043 "src/sintatico.tab.c"
     break;
 
   case 46: /* simple_expression: arithmetic_expression  */
-#line 231 "src/sintatico.y"
+#line 234 "src/sintatico.y"
                             {}
-#line 2046 "src/sintatico.tab.c"
+#line 2049 "src/sintatico.tab.c"
     break;
 
   case 47: /* arithmetic_expression: arithmetic_expression BINARY_BASIC_OP1 term  */
-#line 235 "src/sintatico.y"
+#line 238 "src/sintatico.y"
                                                 {}
-#line 2052 "src/sintatico.tab.c"
+#line 2055 "src/sintatico.tab.c"
     break;
 
   case 48: /* arithmetic_expression: BINARY_BASIC_OP1 term  */
-#line 236 "src/sintatico.y"
+#line 239 "src/sintatico.y"
                             {}
-#line 2058 "src/sintatico.tab.c"
+#line 2061 "src/sintatico.tab.c"
     break;
 
   case 49: /* arithmetic_expression: TAIL term  */
-#line 237 "src/sintatico.y"
+#line 240 "src/sintatico.y"
                 {}
-#line 2064 "src/sintatico.tab.c"
+#line 2067 "src/sintatico.tab.c"
     break;
 
   case 50: /* arithmetic_expression: HEADER term  */
-#line 238 "src/sintatico.y"
+#line 241 "src/sintatico.y"
                   {}
-#line 2070 "src/sintatico.tab.c"
+#line 2073 "src/sintatico.tab.c"
     break;
 
   case 51: /* arithmetic_expression: term  */
-#line 239 "src/sintatico.y"
+#line 242 "src/sintatico.y"
            {}
-#line 2076 "src/sintatico.tab.c"
+#line 2079 "src/sintatico.tab.c"
     break;
 
   case 52: /* term: term BINARY_BASIC_OP2 factor  */
-#line 243 "src/sintatico.y"
+#line 246 "src/sintatico.y"
                                  {}
-#line 2082 "src/sintatico.tab.c"
+#line 2085 "src/sintatico.tab.c"
     break;
 
   case 53: /* term: factor  */
-#line 244 "src/sintatico.y"
+#line 247 "src/sintatico.y"
              {}
-#line 2088 "src/sintatico.tab.c"
+#line 2091 "src/sintatico.tab.c"
     break;
 
   case 54: /* factor: '(' expression ')'  */
-#line 248 "src/sintatico.y"
+#line 251 "src/sintatico.y"
                        {}
-#line 2094 "src/sintatico.tab.c"
+#line 2097 "src/sintatico.tab.c"
     break;
 
   case 55: /* factor: ID  */
-#line 249 "src/sintatico.y"
+#line 252 "src/sintatico.y"
          {}
-#line 2100 "src/sintatico.tab.c"
+#line 2103 "src/sintatico.tab.c"
     break;
 
   case 56: /* factor: INT  */
-#line 250 "src/sintatico.y"
+#line 253 "src/sintatico.y"
           {}
-#line 2106 "src/sintatico.tab.c"
+#line 2109 "src/sintatico.tab.c"
     break;
 
   case 57: /* factor: FLOAT  */
-#line 251 "src/sintatico.y"
+#line 254 "src/sintatico.y"
             {}
-#line 2112 "src/sintatico.tab.c"
+#line 2115 "src/sintatico.tab.c"
     break;
 
   case 58: /* factor: ID '(' ID ')'  */
-#line 252 "src/sintatico.y"
+#line 255 "src/sintatico.y"
                     {}
-#line 2118 "src/sintatico.tab.c"
+#line 2121 "src/sintatico.tab.c"
     break;
 
   case 59: /* factor: LIST_CONSTANT  */
-#line 253 "src/sintatico.y"
+#line 256 "src/sintatico.y"
                     {}
-#line 2124 "src/sintatico.tab.c"
+#line 2127 "src/sintatico.tab.c"
     break;
 
   case 60: /* print: OUTPUT '(' STRING ')' ';'  */
-#line 257 "src/sintatico.y"
+#line 260 "src/sintatico.y"
                               {}
-#line 2130 "src/sintatico.tab.c"
+#line 2133 "src/sintatico.tab.c"
     break;
 
   case 61: /* print: OUTPUT '(' expression ')' ';'  */
-#line 258 "src/sintatico.y"
+#line 261 "src/sintatico.y"
                                     {}
-#line 2136 "src/sintatico.tab.c"
+#line 2139 "src/sintatico.tab.c"
     break;
 
   case 62: /* scan: INPUT '(' ID ')' ';'  */
-#line 262 "src/sintatico.y"
+#line 265 "src/sintatico.y"
                          {}
-#line 2142 "src/sintatico.tab.c"
+#line 2145 "src/sintatico.tab.c"
     break;
 
   case 63: /* binary_construct: binary_construct_recursive BINARY_CONSTRUCTOR ID  */
-#line 266 "src/sintatico.y"
+#line 269 "src/sintatico.y"
                                                      {}
-#line 2148 "src/sintatico.tab.c"
+#line 2151 "src/sintatico.tab.c"
     break;
 
   case 64: /* binary_construct_recursive: binary_construct_recursive BINARY_CONSTRUCTOR ID  */
-#line 270 "src/sintatico.y"
+#line 273 "src/sintatico.y"
                                                      {}
-#line 2154 "src/sintatico.tab.c"
+#line 2157 "src/sintatico.tab.c"
     break;
 
   case 65: /* binary_construct_recursive: ID  */
-#line 271 "src/sintatico.y"
+#line 274 "src/sintatico.y"
          {}
-#line 2160 "src/sintatico.tab.c"
+#line 2163 "src/sintatico.tab.c"
     break;
 
   case 66: /* binary_construct_recursive: error  */
-#line 272 "src/sintatico.y"
+#line 275 "src/sintatico.y"
             {yyerrok;}
-#line 2166 "src/sintatico.tab.c"
+#line 2169 "src/sintatico.tab.c"
     break;
 
 
-#line 2170 "src/sintatico.tab.c"
+#line 2173 "src/sintatico.tab.c"
 
       default: break;
     }
@@ -2391,7 +2394,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 277 "src/sintatico.y"
+#line 280 "src/sintatico.y"
 
 
 void yyerror(const char* msg){

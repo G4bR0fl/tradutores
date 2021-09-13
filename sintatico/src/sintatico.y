@@ -93,15 +93,18 @@
 %%
 program: 
     declaration_list { 
-        $$ = create_node("program");
-        $$->next_node = $1;
-        main_node = $$;
-        printf("%s\n", main_node->rule_name);
+        $$ = create_node();
+        printf("\n");
+        // $$->next_node = $1;
+        // main_node = $$;
+        // printf("%s\n", main_node->rule_name);
     }
 ;
 
 declaration_list:
-    declaration_list declaration {}
+    declaration_list declaration {
+        
+    }
     | declaration {}
 ;
 
