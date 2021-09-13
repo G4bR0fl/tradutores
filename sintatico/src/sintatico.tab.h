@@ -86,15 +86,16 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 29 "src/sintatico.y"
+#line 33 "src/sintatico.y"
 
     struct Token {
         int columns;
         int line;
         char body[101];
     } token;
+    tree* node;
 
-#line 98 "src/sintatico.tab.h"
+#line 99 "src/sintatico.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

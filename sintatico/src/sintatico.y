@@ -5,9 +5,12 @@
     #include <stdlib.h>
     #include <string.h>    
     #include "../lib/tabela.h"
+    #include "../lib/arvore.h"
+
 
     #define BRED "\e[0;31m"
     #define BMAG "\e[1;35m"
+    #define BCYAN "\x1b[36m"
     #define RESET "\e[0m"
 
     extern int line;
@@ -23,6 +26,7 @@
     extern symbol symbol_table[100000];
     int table_index = 0;
     int table_size = 0;
+    tree* main_node;
     
 %}  
 
@@ -32,6 +36,7 @@
         int line;
         char body[101];
     } token;
+    tree* node;
 }
 
 %token <token> SIMPLE_TYPE
@@ -59,27 +64,56 @@
 %token <token> FOR
 %token <token> RETURN
 
+%type <node> program
+%type <node> declaration_list
+%type <node> declaration
+%type <node> var_declaration
+%type <node> function_declaration
+%type <node> list_declaration
+%type <node> params
+%type <node> param
+%type <node> if_stmt
+%type <node> if_else_stmt
+%type <node> for_stmt
+%type <node> return_stmt
+%type <node> general_declaration
+%type <node> multiple_stmt
+%type <node> expression_stmt
+%type <node> expression
+%type <node> stmt
+%type <node> simple_expression
+%type <node> arithmetic_expression
+%type <node> term
+%type <node> factor
+%type <node> binary_construct
+%type <node> binary_construct_recursive
+
+%start program
 
 %%
 program: 
-    declaration_list
+    declaration_list { 
+        $$ = create_node("program");
+        $$->next_node = $1;
+        main_node = $$;
+        printf("%s\n", main_node->rule_name);
+    }
 ;
 
 declaration_list:
-    declaration_list declaration 
-    | declaration
+    declaration_list declaration {}
+    | declaration {}
 ;
 
 declaration:
-    var_declaration 
-    | function_declaration 
-    | list_declaration 
-    | error {yyerrok;}
+    var_declaration {}
+    | function_declaration {} 
+    | list_declaration {}  
+    | error {yyerrok;} {}
 ;
 
 var_declaration:
     SIMPLE_TYPE ID ';' {
-        // printf("var_declaration -> %s %s ';'\n", $1.body, $2.body);
         symbol new_symbol = add_symbol($2.line, $2.columns, $2.body, $1.body, 0, scope);
         symbol_table[table_index] = new_symbol;
         table_index++;
@@ -128,113 +162,113 @@ list_declaration:
 ;
 
 params:
-    params ',' param
-    | param
-    | %empty
+    params ',' param {} 
+    | param {}
+    | %empty {}
     | error {yyerrok;}
 ;
 
 param:
-    SIMPLE_TYPE ID 
+    SIMPLE_TYPE ID {}
 ;
 
 if_stmt:
-    IF '(' expression ')' '{' multiple_stmt '}' 
+    IF '(' expression ')' '{' multiple_stmt '}' {}
 ;
 
 if_else_stmt: 
-    IF '(' expression ')' '{' multiple_stmt '}' ELSE '{' multiple_stmt '}' 
-    | IF '(' expression ')' '{' multiple_stmt '}' ELSE stmt
+    IF '(' expression ')' '{' multiple_stmt '}' ELSE '{' multiple_stmt '}' {}
+    | IF '(' expression ')' '{' multiple_stmt '}' ELSE stmt {}
 ;
 
 for_stmt:
-    FOR '(' expression ';' expression ';' expression')' '{' multiple_stmt '}'
+    FOR '(' expression ';' expression ';' expression')' '{' multiple_stmt '}' {}
 ;
 
 return_stmt:
-    RETURN ';' 
-    | RETURN expression ';'
+    RETURN ';' {}
+    | RETURN expression ';' {}
 ;
 
 general_declaration:
-    general_declaration var_declaration
-    | general_declaration list_declaration
-    | general_declaration stmt
-    | %empty
+    general_declaration var_declaration {}
+    | general_declaration list_declaration {}
+    | general_declaration stmt {}
+    | %empty {}
 ;
 
 multiple_stmt:
-    general_declaration 
+    general_declaration {} 
 ;
 
 expression_stmt:
-    expression ';' 
+    expression ';' {}
 ;
 
 expression:
-    ID '=' expression 
-    | simple_expression 
-    |binary_construct
-    | ID MAP ID
-    | ID FILTER ID
+    ID '=' expression {} 
+    | simple_expression {}
+    |binary_construct {}
+    | ID MAP ID {}
+    | ID FILTER ID {}
     | error {yyerrok;}
 ;
 
 stmt:
-    expression_stmt
-    | if_stmt 
-    | if_else_stmt 
-    | for_stmt
-    | return_stmt 
-    | print
-    | scan
+    expression_stmt {}
+    | if_stmt {} 
+    | if_else_stmt {} 
+    | for_stmt {}
+    | return_stmt {} 
+    | print {}
+    | scan {}
     | error {yyerrok;}
 ;
 
 
 simple_expression:
-    arithmetic_expression BINARY_COMP_OP arithmetic_expression 
-    | arithmetic_expression
+    arithmetic_expression BINARY_COMP_OP arithmetic_expression {}
+    | arithmetic_expression {}
 ;   
 
 arithmetic_expression:
-    arithmetic_expression BINARY_BASIC_OP1 term 
-    | BINARY_BASIC_OP1 term 
-    | TAIL term
-    | HEADER term
-    | term 
+    arithmetic_expression BINARY_BASIC_OP1 term {} 
+    | BINARY_BASIC_OP1 term {}
+    | TAIL term {}
+    | HEADER term {}
+    | term {}
 ;
 
 term: 
-    term BINARY_BASIC_OP2 factor
-    | factor
+    term BINARY_BASIC_OP2 factor {}
+    | factor {}
 ;
 
 factor:
-    '(' expression ')' 
-    | ID 
-    | INT 
-    | FLOAT 
-    | ID '(' ID ')' 
-    | LIST_CONSTANT
+    '(' expression ')' {} 
+    | ID {}
+    | INT {}
+    | FLOAT {}
+    | ID '(' ID ')' {} 
+    | LIST_CONSTANT {}
 ;
 
 print:
-    OUTPUT '(' STRING ')' ';' 
-    | OUTPUT '(' expression ')' ';'
+    OUTPUT '(' STRING ')' ';' {}
+    | OUTPUT '(' expression ')' ';' {}
 ;
 
 scan:
-    INPUT '(' ID ')' ';' 
+    INPUT '(' ID ')' ';' {}
 ;
 
 binary_construct:
-    binary_construct_recursive BINARY_CONSTRUCTOR ID 
+    binary_construct_recursive BINARY_CONSTRUCTOR ID {} 
 ;
 
 binary_construct_recursive:
-    binary_construct_recursive BINARY_CONSTRUCTOR ID 
-    | ID 
+    binary_construct_recursive BINARY_CONSTRUCTOR ID {}
+    | ID {}
     | error {yyerrok;}
 ;
 
@@ -244,7 +278,7 @@ binary_construct_recursive:
 
 void yyerror(const char* msg){
     printf(BRED"(%d|%d) ", line, columns);
-    printf("Erro sintatico: ");
+    printf("Syntax error: ");
     printf("%s\n"RESET, msg);
     errors++;
 }
@@ -262,6 +296,9 @@ int main(int argc, char ** argv) {
     }
     else {
         printf("No input given.\n");
+    }
+    if(errors == 0){
+        printf(BCYAN"No errors detected\n" RESET);
     }
     print_table(table_size);
     fclose(yyin);    

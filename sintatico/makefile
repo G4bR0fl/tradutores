@@ -1,7 +1,7 @@
 all: compile
 
 compile: src/lex.yy.c
-	gcc-11 -g -Wall -o tradutor src/sintatico.tab.c src/lex.yy.c src/tabela.c -ll
+	gcc-11 -g -Wall -I lib -o tradutor src/sintatico.tab.c src/lex.yy.c src/tabela.c src/arvore.c -ll
 
 src/lex.yy.c: src/sintatico.tab.c
 	flex -o src/lex.yy.c src/lexico.l
