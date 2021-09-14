@@ -179,7 +179,7 @@ FILTER              "<<"
 
 . {
     errors++;
-    printf(BRED"(%d:%d)Unidentified character: '%s'\n" RESET, line, columns, yytext);
+    printf(BRED"(%d:%d)Lexical error: '%s'\n" RESET, line, columns, yytext);
     columns += yyleng;
 }
 
