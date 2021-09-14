@@ -47,3 +47,29 @@ void free_node(tree* main_node){
     }
 }
 
+void print_tree(tree* main_node, int depth){
+    if(main_node == NULL){
+        printf("Chambraram as arvores tudo :(");
+        return;
+    }else{
+        for(int i = 0; i < depth; i++){
+            printf(" | ");
+        }
+        printf(" ├─ %s\n", main_node->type_name);
+        if(main_node->node1){
+            print_tree(main_node->node1, depth+1);
+        }
+        if(main_node->node2){
+            print_tree(main_node->node2, depth+1);
+        }
+        if(main_node->node3){
+            print_tree(main_node->node3, depth+1);
+        }
+        if(main_node->node4){
+            print_tree(main_node->node4, depth+1);
+        }
+        if(main_node->node5){
+            print_tree(main_node->node5, depth+1);
+        }
+    }
+}

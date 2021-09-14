@@ -145,26 +145,6 @@ function_declaration:
         $$->node3 = $4;
         $$->node4 = $7;
     }
-;
-
-list_declaration: 
-    SIMPLE_TYPE LIST_TYPE ID ';' {
-        char str_simple_type[50];
-        char str_list_type[50];
-        char list_string[101];
-        strcpy(str_simple_type, $1.body);
-        strcat(str_simple_type, "\x20");
-        strcpy(str_list_type, $2.body);
-        strcpy(list_string, strcat(str_simple_type, str_list_type));
-        symbol new_symbol = add_symbol($3.line, $3.columns, $3.body, list_string, 0, scope);
-        symbol_table[table_index] = new_symbol;
-        table_index++;
-        table_size++;
-
-        $$ = create_node("list_declaration");
-        $$->node1 = create_node(list_string);
-        $$->node2 = create_node($3.body);
-    }
     | SIMPLE_TYPE LIST_TYPE ID '(' params ')' '{' multiple_stmt '}' {
         char str_simple_type[50];
         char str_list_type[50];
@@ -185,6 +165,27 @@ list_declaration:
         $$->node4 = $8;
         
     }
+;
+
+list_declaration: 
+    SIMPLE_TYPE LIST_TYPE ID ';' {
+        char str_simple_type[50];
+        char str_list_type[50];
+        char list_string[101];
+        strcpy(str_simple_type, $1.body);
+        strcat(str_simple_type, "\x20");
+        strcpy(str_list_type, $2.body);
+        strcpy(list_string, strcat(str_simple_type, str_list_type));
+        symbol new_symbol = add_symbol($3.line, $3.columns, $3.body, list_string, 0, scope);
+        symbol_table[table_index] = new_symbol;
+        table_index++;
+        table_size++;
+
+        $$ = create_node("list_declaration");
+        $$->node1 = create_node(list_string);
+        $$->node2 = create_node($3.body);
+    }
+    
 ;
 
 params:
@@ -445,6 +446,7 @@ int main(int argc, char ** argv) {
         printf(BCYAN"No errors detected\n" RESET);
     }
     print_table(table_size);
+    print_tree(root, 0);
     free_node(root);
     fclose(yyin);    
     yylex_destroy();
