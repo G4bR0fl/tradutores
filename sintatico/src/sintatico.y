@@ -26,7 +26,7 @@
     extern symbol symbol_table[100000];
     int table_index = 0;
     int table_size = 0;
-    tree* main_node;
+    tree* root;
     
 %}  
 
@@ -87,32 +87,36 @@
 %type <node> factor
 %type <node> binary_construct
 %type <node> binary_construct_recursive
+%type <node> print
+%type <node> scan
 
 %start program
 
 %%
 program: 
     declaration_list { 
-        $$ = create_node();
-        printf("\n");
-        // $$->next_node = $1;
-        // main_node = $$;
-        // printf("%s\n", main_node->rule_name);
+        $$ = create_node("program");
+        $$->node1 = $1;
+        root = $$;
     }
 ;
 
 declaration_list:
     declaration_list declaration {
-        
+        $$ = create_node("declaration_list");
+        $$->node1 = $1;
+        $$->node2 = $2;
     }
-    | declaration {}
+    | declaration {
+        $$ = $1;
+    }
 ;
 
 declaration:
-    var_declaration {}
-    | function_declaration {} 
-    | list_declaration {}  
-    | error {yyerrok;} {}
+    var_declaration {$$ = $1;}
+    | function_declaration {$$ = $1;} 
+    | list_declaration {$$ = $1;}  
+    | error {yyerrok;}
 ;
 
 var_declaration:
@@ -121,6 +125,10 @@ var_declaration:
         symbol_table[table_index] = new_symbol;
         table_index++;
         table_size++;
+
+        $$ = create_node("var_declaration");
+        $$->node1 = create_node($1.body);
+        $$->node2 = create_node($2.body);
     }
 ;
 
@@ -130,6 +138,12 @@ function_declaration:
         symbol_table[table_index] = new_symbol;
         table_index++;
         table_size++;   
+
+        $$ = create_node("function_declaration");
+        $$->node1 = create_node($1.body);
+        $$->node2 = create_node($2.body);
+        $$->node3 = $4;
+        $$->node4 = $7;
     }
 ;
 
@@ -146,7 +160,10 @@ list_declaration:
         symbol_table[table_index] = new_symbol;
         table_index++;
         table_size++;
-       
+
+        $$ = create_node("list_declaration");
+        $$->node1 = create_node(list_string);
+        $$->node2 = create_node($3.body);
     }
     | SIMPLE_TYPE LIST_TYPE ID '(' params ')' '{' multiple_stmt '}' {
         char str_simple_type[50];
@@ -161,120 +178,244 @@ list_declaration:
         table_index++;
         table_size++;
         
+        $$ = create_node("list_declaration");
+        $$->node1 = create_node(list_string);
+        $$->node2 = create_node($3.body);
+        $$->node3 = $5;
+        $$->node4 = $8;
+        
     }
 ;
 
 params:
-    params ',' param {} 
-    | param {}
-    | %empty {}
+    params ',' param {
+        $$ = create_node("params");
+        $$->node1 = $3;
+    } 
+    | param {$$ = $1;}
+    | %empty {
+        $$ = create_node("empty");
+    }
     | error {yyerrok;}
 ;
 
 param:
-    SIMPLE_TYPE ID {}
+    SIMPLE_TYPE ID {
+        $$ = create_node("param");
+        $$->node1 = create_node($1.body);
+        $$->node2 = create_node($2.body);
+    }
 ;
 
 if_stmt:
-    IF '(' expression ')' '{' multiple_stmt '}' {}
+    IF '(' expression ')' '{' multiple_stmt '}' {
+        $$ = create_node("if_stmt");
+        $$->node1 = create_node($1.body);
+        $$->node2 = $3;
+        $$->node3 = $6;
+    }
 ;
 
 if_else_stmt: 
-    IF '(' expression ')' '{' multiple_stmt '}' ELSE '{' multiple_stmt '}' {}
-    | IF '(' expression ')' '{' multiple_stmt '}' ELSE stmt {}
+    IF '(' expression ')' '{' multiple_stmt '}' ELSE '{' multiple_stmt '}' {
+        $$ = create_node("if_else_stmt");
+        $$->node1 = create_node($1.body);
+        $$->node2 = $3;
+        $$->node3 = $6;
+        $$->node4 = create_node($8.body);
+        $$->node5 = $10;
+    }
+    | IF '(' expression ')' '{' multiple_stmt '}' ELSE stmt {
+        $$ = create_node("if_else_stmt");
+        $$->node1 = create_node($1.body);
+        $$->node2 = $3;
+        $$->node3 = $6;
+        $$->node4 = create_node($8.body);
+        $$->node5 = $9;
+    }
 ;
 
 for_stmt:
-    FOR '(' expression ';' expression ';' expression')' '{' multiple_stmt '}' {}
+    FOR '(' expression ';' expression ';' expression ')' '{' multiple_stmt '}' {
+        $$ = create_node("for_stmt");
+        $$->node1 = create_node($1.body);
+        $$->node2 = $3;
+        $$->node3 = $5;
+        $$->node4 = $7;
+        $$->node5 = $10;
+    }
 ;
 
 return_stmt:
-    RETURN ';' {}
-    | RETURN expression ';' {}
+    RETURN ';' {$$ = create_node($1.body);}
+    | RETURN expression ';' {
+        $$ = create_node($1.body);
+        $$->node1 = $2;
+    }
 ;
 
 general_declaration:
-    general_declaration var_declaration {}
-    | general_declaration list_declaration {}
-    | general_declaration stmt {}
-    | %empty {}
+    general_declaration var_declaration {
+        $$ = create_node("general_declaration");
+        $$->node1 = $1;
+        $$->node2 = $2;
+    }
+    | general_declaration list_declaration {
+        $$ = create_node("general_declaration");
+        $$->node1 = $1;
+        $$->node2 = $2;
+    }
+    | general_declaration stmt {
+        $$ = create_node("general_declaration");
+        $$->node1 = $1;
+        $$->node2 = $2;
+    }
+    | %empty {
+        $$ = create_node("empty");
+    }
 ;
 
 multiple_stmt:
-    general_declaration {} 
+    general_declaration {$$ = $1;} 
 ;
 
 expression_stmt:
-    expression ';' {}
+    expression ';' {$$ = $1;}
 ;
 
 expression:
-    ID '=' expression {} 
-    | simple_expression {}
-    |binary_construct {}
-    | ID MAP ID {}
-    | ID FILTER ID {}
+    ID '=' expression {
+        $$ = create_node("expression");
+        $$->node1 = create_node($1.body);
+        $$->node2 = $3;
+    } 
+    | simple_expression {$$ = $1;}
+    | binary_construct {$$ = $1;}
+    | ID MAP ID {
+        $$ = create_node("expression");
+        $$->node1 = create_node($1.body);
+        $$->node2 = create_node($2.body);
+        $$->node3 = create_node($3.body);
+    }
+    | ID FILTER ID {
+        $$ = create_node("expression");
+        $$->node1 = create_node($1.body);
+        $$->node2 = create_node($2.body);
+        $$->node3 = create_node($3.body);
+    }
     | error {yyerrok;}
 ;
 
 stmt:
-    expression_stmt {}
-    | if_stmt {} 
-    | if_else_stmt {} 
-    | for_stmt {}
-    | return_stmt {} 
-    | print {}
-    | scan {}
+    expression_stmt {$$ = $1;}
+    | if_stmt {$$ = $1;} 
+    | if_else_stmt {$$ = $1;} 
+    | for_stmt {$$ = $1;}
+    | return_stmt {$$ = $1;} 
+    | print {$$ = $1;}
+    | scan {$$ = $1;}
     | error {yyerrok;}
 ;
 
 
 simple_expression:
-    arithmetic_expression BINARY_COMP_OP arithmetic_expression {}
-    | arithmetic_expression {}
+    arithmetic_expression BINARY_COMP_OP arithmetic_expression {
+        $$ = create_node("simple_expression");
+        $$->node1 = $1;
+        $$->node2 = create_node($2.body);
+        $$->node3 = $3;
+    }
+    | arithmetic_expression {$$ = $1;}
 ;   
 
 arithmetic_expression:
-    arithmetic_expression BINARY_BASIC_OP1 term {} 
-    | BINARY_BASIC_OP1 term {}
-    | TAIL term {}
-    | HEADER term {}
-    | term {}
+    arithmetic_expression BINARY_BASIC_OP1 term {
+        $$ = create_node("arithmetic_expression");
+        $$->node1 = $1;
+        $$->node2 = create_node($2.body);
+        $$->node3 = $3;
+    } 
+    | BINARY_BASIC_OP1 term {
+        $$ = create_node("arithmetic_expression");
+        $$->node1 = create_node($1.body);
+        $$->node2 = $2;
+    }
+    | TAIL term {
+        $$ = create_node("arithmetic_expression");
+        $$->node1 = create_node($1.body);
+        $$->node2 = $2;
+    }
+    | HEADER term {
+        $$ = create_node("arithmetic_expression");
+        $$->node1 = create_node($1.body);
+        $$->node2 = $2;
+    }
+    | term {$$ = $1;}
 ;
 
 term: 
-    term BINARY_BASIC_OP2 factor {}
-    | factor {}
+    term BINARY_BASIC_OP2 factor {
+        $$ = create_node("term");
+        $$->node1 = $1;
+        $$->node2 = create_node($2.body);
+        $$->node3 = $3;
+    }
+    | factor {$$ = $1;}
 ;
 
 factor:
-    '(' expression ')' {} 
-    | ID {}
-    | INT {}
-    | FLOAT {}
-    | ID '(' ID ')' {} 
-    | LIST_CONSTANT {}
+    '(' expression ')' {$$ = $2;} 
+    | ID {$$ = create_node($1.body);}
+    | INT {$$ = create_node($1.body);}
+    | FLOAT {$$ = create_node($1.body);}
+    | ID '(' ID ')' {
+        $$ = create_node("factor");
+        $$->node1 = create_node($1.body);
+        $$->node2 = create_node($3.body);
+    } 
+    | LIST_CONSTANT {$$ = create_node($1.body);}
 ;
 
 print:
-    OUTPUT '(' STRING ')' ';' {}
-    | OUTPUT '(' expression ')' ';' {}
+    OUTPUT '(' STRING ')' ';' {
+        $$ = create_node("print");
+        $$->node1 = create_node($1.body);
+        $$->node2 = create_node($3.body);
+    }
+    | OUTPUT '(' expression ')' ';' {
+        $$ = create_node("print");
+        $$->node1 = create_node($1.body);
+        $$->node2 = $3;
+    }
 ;
 
 scan:
-    INPUT '(' ID ')' ';' {}
+    INPUT '(' ID ')' ';' {
+        $$ = create_node("scan");
+        $$->node1 = create_node($1.body);
+        $$->node2 = create_node($3.body);
+    }
 ;
 
 binary_construct:
-    binary_construct_recursive BINARY_CONSTRUCTOR ID {} 
+    binary_construct_recursive BINARY_CONSTRUCTOR ID {
+        $$ = create_node("binary_constructor");
+        $$->node1 = $1;
+        $$->node2 = create_node($2.body);
+        $$->node3 = create_node($3.body);
+    } 
 ;
 
 binary_construct_recursive:
-    binary_construct_recursive BINARY_CONSTRUCTOR ID {}
-    | ID {}
+    binary_construct_recursive BINARY_CONSTRUCTOR ID {
+        $$ = create_node("binary_constructor_recursive");
+        $$->node1 = $1;
+        $$->node2 = create_node($2.body);
+        $$->node3 = create_node($3.body);
+    }
+    | ID {$$ = create_node($1.body);}
     | error {yyerrok;}
 ;
-
 
 
 %%
@@ -304,6 +445,7 @@ int main(int argc, char ** argv) {
         printf(BCYAN"No errors detected\n" RESET);
     }
     print_table(table_size);
+    free_node(root);
     fclose(yyin);    
     yylex_destroy();
     return 0;
