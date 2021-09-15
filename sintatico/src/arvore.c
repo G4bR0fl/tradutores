@@ -6,7 +6,6 @@
 tree* create_node(char* type_name){
     tree* main_node = (tree*)malloc(sizeof(tree));
     strcpy(main_node->type_name, type_name);
-    main_node->symbol = NULL;
     main_node->node1 = NULL;
     main_node->node2 = NULL;
     main_node->node3 = NULL;
@@ -49,7 +48,6 @@ void free_node(tree* main_node){
 
 void print_tree(tree* main_node, int depth){
     if(main_node == NULL){
-        printf("Chambraram as arvores tudo :(");
         return;
     }else{
         for(int i = 0; i < depth; i++){

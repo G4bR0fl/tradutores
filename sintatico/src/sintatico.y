@@ -163,7 +163,6 @@ function_declaration:
         $$->node2 = create_node($3.body);
         $$->node3 = $5;
         $$->node4 = $8;
-        
     }
 ;
 
@@ -444,10 +443,10 @@ int main(int argc, char ** argv) {
     }
     if(errors == 0){
         printf(BCYAN"No errors detected\n" RESET);
+        print_table(table_size);
+        print_tree(root, 0);
+        free_node(root);
     }
-    print_table(table_size);
-    print_tree(root, 0);
-    free_node(root);
     fclose(yyin);    
     yylex_destroy();
     return 0;
