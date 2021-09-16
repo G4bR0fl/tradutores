@@ -6,7 +6,7 @@
 typedef struct Tree tree;
 
 struct Tree {
-    char type_name[100000];
+    char type_name[1000];
     struct Tree* node1;
     struct Tree* node2;
     struct Tree* node3;

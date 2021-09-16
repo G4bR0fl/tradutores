@@ -225,18 +225,28 @@ FILTER              "<<"
 }
 
 "=" {
+    strcpy(yylval.token.body, yytext);
+    yylval.token.columns = columns;
+    yylval.token.line = line;
     columns += yyleng;
     return '=';
 }
 
 "{" {
+    strcpy(yylval.token.body, yytext);
+    yylval.token.columns = columns;
+    yylval.token.line = line;
     columns += yyleng;
     scope++;
     return '{';
 }
 
 "}" {
+    strcpy(yylval.token.body, yytext);
+    yylval.token.columns = columns;
+    yylval.token.line = line;
     columns += yyleng;
+    scope--;
     return '}';
 }
 

@@ -1021,14 +1021,20 @@ case 22:
 YY_RULE_SETUP
 #line 227 "src/lexico.l"
 {
+    strcpy(yylval.token.body, yytext);
+    yylval.token.columns = columns;
+    yylval.token.line = line;
     columns += yyleng;
     return '=';
 }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 232 "src/lexico.l"
+#line 235 "src/lexico.l"
 {
+    strcpy(yylval.token.body, yytext);
+    yylval.token.columns = columns;
+    yylval.token.line = line;
     columns += yyleng;
     scope++;
     return '{';
@@ -1036,15 +1042,19 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 238 "src/lexico.l"
+#line 244 "src/lexico.l"
 {
+    strcpy(yylval.token.body, yytext);
+    yylval.token.columns = columns;
+    yylval.token.line = line;
     columns += yyleng;
+    scope--;
     return '}';
 }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 243 "src/lexico.l"
+#line 253 "src/lexico.l"
 {    
     columns += yyleng;
     return '(';
@@ -1052,7 +1062,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 248 "src/lexico.l"
+#line 258 "src/lexico.l"
 {
     columns += yyleng;
     return ')';
@@ -1060,7 +1070,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 254 "src/lexico.l"
+#line 264 "src/lexico.l"
 {
     columns += yyleng;
 }
@@ -1068,7 +1078,7 @@ YY_RULE_SETUP
 case 28:
 /* rule 28 can match eol */
 YY_RULE_SETUP
-#line 258 "src/lexico.l"
+#line 268 "src/lexico.l"
 {
     line++;
     columns = 1;
@@ -1076,7 +1086,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 263 "src/lexico.l"
+#line 273 "src/lexico.l"
 {
     printf(BRED"(%d:%d)Unidentified character: '%s'\n" RESET, line, columns, yytext);
     errors++;
@@ -1085,10 +1095,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 269 "src/lexico.l"
+#line 279 "src/lexico.l"
 ECHO;
 	YY_BREAK
-#line 1092 "src/lex.yy.c"
+#line 1102 "src/lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2056,5 +2066,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 269 "src/lexico.l"
+#line 279 "src/lexico.l"
 

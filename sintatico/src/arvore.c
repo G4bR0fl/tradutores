@@ -54,19 +54,19 @@ void print_tree(tree* main_node, int depth){
             printf(" | ");
         }
         printf(" ├─ %s\n", main_node->type_name);
-        if(main_node->node1){
+        if(main_node->node1 && strcmp(main_node->node1->type_name, "empty") != 0){
             print_tree(main_node->node1, depth+1);
         }
-        if(main_node->node2){
+        if(main_node->node2 && strcmp(main_node->node2->type_name, "empty") != 0){
             print_tree(main_node->node2, depth+1);
         }
-        if(main_node->node3){
+        if(main_node->node3 && strcmp(main_node->node3->type_name, "empty") != 0){
             print_tree(main_node->node3, depth+1);
         }
-        if(main_node->node4){
+        if(main_node->node4 && strcmp(main_node->node4->type_name, "empty") != 0){
             print_tree(main_node->node4, depth+1);
         }
-        if(main_node->node5){
+        if(main_node->node5 && strcmp(main_node->node5->type_name, "empty") != 0){
             print_tree(main_node->node5, depth+1);
         }
     }

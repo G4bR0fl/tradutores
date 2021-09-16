@@ -63,6 +63,7 @@
 %token <token> ELSE
 %token <token> FOR
 %token <token> RETURN
+%token <token> '=' '!' '(' ')' '{' '}'
 
 %type <node> program
 %type <node> declaration_list
@@ -89,6 +90,11 @@
 %type <node> binary_construct_recursive
 %type <node> print
 %type <node> scan
+%type <node> relational_expression
+%type <node> list_operation
+%type <node> recursive_list_operation
+%type <node> for_variation_null_expressions
+
 
 %start program
 
@@ -158,7 +164,7 @@ function_declaration:
         table_index++;
         table_size++;
         
-        $$ = create_node("list_declaration");
+        $$ = create_node("function_declaration");
         $$->node1 = create_node(list_string);
         $$->node2 = create_node($3.body);
         $$->node3 = $5;
@@ -205,6 +211,12 @@ param:
         $$->node1 = create_node($1.body);
         $$->node2 = create_node($2.body);
     }
+    | SIMPLE_TYPE LIST_TYPE ID {
+        $$ = create_node("param");
+        $$->node1 = create_node($1.body);
+        $$->node2 = create_node($2.body);
+        $$->node3 = create_node($3.body);
+    }
 ;
 
 if_stmt:
@@ -236,7 +248,7 @@ if_else_stmt:
 ;
 
 for_stmt:
-    FOR '(' expression ';' expression ';' expression ')' '{' multiple_stmt '}' {
+    FOR '(' for_variation_null_expressions ';' for_variation_null_expressions ';' for_variation_null_expressions ')' '{' multiple_stmt '}' {
         $$ = create_node("for_stmt");
         $$->node1 = create_node($1.body);
         $$->node2 = $3;
@@ -287,23 +299,18 @@ expression:
     ID '=' expression {
         $$ = create_node("expression");
         $$->node1 = create_node($1.body);
-        $$->node2 = $3;
+        $$->node2 = create_node($2.body);
+        $$->node3 = $3;
     } 
     | simple_expression {$$ = $1;}
     | binary_construct {$$ = $1;}
-    | ID MAP ID {
-        $$ = create_node("expression");
-        $$->node1 = create_node($1.body);
-        $$->node2 = create_node($2.body);
-        $$->node3 = create_node($3.body);
-    }
-    | ID FILTER ID {
-        $$ = create_node("expression");
-        $$->node1 = create_node($1.body);
-        $$->node2 = create_node($2.body);
-        $$->node3 = create_node($3.body);
-    }
+    | list_operation {$$ = $1;}
     | error {yyerrok;}
+;
+
+for_variation_null_expressions:
+    expression {$$ = $1;}
+    | %empty{$$ = create_node("empty");}
 ;
 
 stmt:
@@ -319,14 +326,24 @@ stmt:
 
 
 simple_expression:
-    arithmetic_expression BINARY_COMP_OP arithmetic_expression {
+    relational_expression {$$ = $1;}
+    | arithmetic_expression LOGIC_OP arithmetic_expression {
         $$ = create_node("simple_expression");
         $$->node1 = $1;
         $$->node2 = create_node($2.body);
         $$->node3 = $3;
     }
-    | arithmetic_expression {$$ = $1;}
 ;   
+
+relational_expression:
+    relational_expression BINARY_COMP_OP arithmetic_expression {
+        $$ = create_node("relational_expression");
+        $$->node1 = $1;
+        $$->node2 = create_node($2.body);
+        $$->node3 = $3;
+    }
+    | arithmetic_expression {$$ = $1;}
+;
 
 arithmetic_expression:
     arithmetic_expression BINARY_BASIC_OP1 term {
@@ -340,12 +357,12 @@ arithmetic_expression:
         $$->node1 = create_node($1.body);
         $$->node2 = $2;
     }
-    | TAIL term {
+    | BINARY_COMP_OP term {
         $$ = create_node("arithmetic_expression");
         $$->node1 = create_node($1.body);
         $$->node2 = $2;
     }
-    | HEADER term {
+    | TAIL term {
         $$ = create_node("arithmetic_expression");
         $$->node1 = create_node($1.body);
         $$->node2 = $2;
@@ -368,12 +385,17 @@ factor:
     | ID {$$ = create_node($1.body);}
     | INT {$$ = create_node($1.body);}
     | FLOAT {$$ = create_node($1.body);}
-    | ID '(' ID ')' {
+    | ID '(' expression ')' {
         $$ = create_node("factor");
         $$->node1 = create_node($1.body);
-        $$->node2 = create_node($3.body);
+        $$->node2 = $3;
     } 
     | LIST_CONSTANT {$$ = create_node($1.body);}
+    | HEADER ID {
+        $$ = create_node("factor");
+        $$->node1 = create_node($1.body);
+        $$->node2 = create_node($2.body);
+    }
 ;
 
 print:
@@ -407,16 +429,46 @@ binary_construct:
 ;
 
 binary_construct_recursive:
-    binary_construct_recursive BINARY_CONSTRUCTOR ID {
+    binary_construct_recursive BINARY_CONSTRUCTOR simple_expression {
         $$ = create_node("binary_constructor_recursive");
+        $$->node1 = $1;
+        $$->node2 = create_node($2.body);
+        $$->node3 = $3;
+    }
+    | simple_expression {$$ = $1;}
+    | error {yyerrok;}
+;
+
+list_operation: 
+    recursive_list_operation MAP ID {
+        $$ = create_node("list_operation");
+        $$->node1 = $1;
+        $$->node2 = create_node($2.body);
+        $$->node3 = create_node($3.body);
+    }
+    | recursive_list_operation FILTER ID {
+        $$ = create_node("list_operation");
+        $$->node1 = $1;
+        $$->node2 = create_node($2.body);
+        $$->node3 = create_node($3.body);
+    }
+;
+
+recursive_list_operation:
+    recursive_list_operation MAP ID {
+        $$ = create_node("recursive_list_operation");
+        $$->node1 = $1;
+        $$->node2 = create_node($2.body);
+        $$->node3 = create_node($3.body);       
+    }
+    | recursive_list_operation FILTER ID {
+        $$ = create_node("recursive_list_operation");
         $$->node1 = $1;
         $$->node2 = create_node($2.body);
         $$->node3 = create_node($3.body);
     }
     | ID {$$ = create_node($1.body);}
-    | error {yyerrok;}
 ;
-
 
 %%
 
