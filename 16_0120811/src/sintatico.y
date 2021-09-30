@@ -493,9 +493,9 @@ int main(int argc, char ** argv) {
     else {
         printf("No input given.\n");
     }
-    print_table(table_size);
     if(errors == 0){
         printf(BCYAN"No errors detected\n" RESET);
+        print_table(table_size);
         print_tree(root, 0);
         free_node(root);
     }
