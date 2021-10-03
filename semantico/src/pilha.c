@@ -4,7 +4,7 @@ pilha scope_stack;
 
 void init_stack(pilha* p){
     p->scope_array[0] = 0;
-    for(int i = 1; i < 15; i++){
+    for(int i = 1; i < 1000; i++){
         p->scope_array[i] = -1;
     }
 }
@@ -32,7 +32,7 @@ int get_stack_top(pilha* p){
 }
 
 void print_stack(pilha* p){
-    for(int i = 0; i < 15; i++){
+    for(int i = 0; i < 1000; i++){
         printf("%d ", p->scope_array[i]);
     }
     printf("\n");

@@ -18,4 +18,5 @@ tree* create_node(char* type_name);
 void free_node(tree* main_node);
 void free_adj_node(tree* main_node);
 void print_tree(tree* main_node, int depth);
+void search_node(tree* main_node, int depth);
 #endif

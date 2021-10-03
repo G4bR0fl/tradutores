@@ -40,7 +40,7 @@ int is_duplicated(symbol* s, char* identifier, int scope, int line, int column){
     for(int i = 0; i < latest_index; i++){
         int id_comparation = strcmp(new_id_string, s[i].identifier);
         if(id_comparation == 0 && scope == s[i].scope){
-            printf(BRED"(%d:%d) '%s' - Declared within the same scope." RESET, line, column, identifier);
+            printf(BRED"(%d:%d) '%s' - Has already been declared on this scope -> [%d]" RESET, line, column, identifier, scope);
             return 1;
         }
     }

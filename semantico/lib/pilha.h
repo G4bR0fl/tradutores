@@ -6,7 +6,7 @@
 #include <string.h>
 
 typedef struct Pilha{
-    int scope_array[15];
+    int scope_array[1000];
     int last_element;
 }pilha;
 

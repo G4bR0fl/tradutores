@@ -2952,7 +2952,7 @@ int main(int argc, char ** argv) {
     print_table(table_size);
     if(errors == 0){
         printf(BCYAN"No errors detected\n" RESET);
-        // print_tree(root, 0);
+        print_tree(root, 0);
         free_node(root);
     }
     fclose(yyin);    

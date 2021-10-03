@@ -12,6 +12,7 @@ tree* create_node(char* type_name){
     main_node->node4 = NULL;
     main_node->node5 = NULL;
     
+
     return main_node;
 }
 
@@ -44,6 +45,10 @@ void free_node(tree* main_node){
     if(main_node != NULL){
         free(main_node);
     }
+}
+
+void search_node(tree* main_node, int depth){
+
 }
 
 void print_tree(tree* main_node, int depth){
