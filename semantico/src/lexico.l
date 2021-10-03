@@ -7,6 +7,7 @@
     #include <string.h>
     #include "../lib/tabela.h"
     #include "../lib/arvore.h"
+    #include "../lib/pilha.h"
     #include "sintatico.tab.h"
 
     #define BRED "\e[0;31m"
@@ -18,6 +19,7 @@
     int errors = 0;
     int scope = 0;
 
+    extern pilha scope_stack;
 %}
 
 SIMPLE_TYPE         int|float
@@ -238,6 +240,12 @@ FILTER              "<<"
     yylval.token.line = line;
     columns += yyleng;
     scope++;
+    push(&scope_stack, scope);
+    // printf("\nPUSH\n");
+    // for(int i = 0; i < 15; i++){
+    //     printf("%d -> ", scope_stack.scope_array[i]);
+    // }
+    printf("\n");
     return '{';
 }
 
@@ -246,7 +254,11 @@ FILTER              "<<"
     yylval.token.columns = columns;
     yylval.token.line = line;
     columns += yyleng;
-    scope--;
+    pop(&scope_stack);
+    // printf("\nPOP\n");
+    // for(int i = 0; i < 15; i++){
+    //     printf("%d -> ", scope_stack.scope_array[i]);
+    // }
     return '}';
 }
 

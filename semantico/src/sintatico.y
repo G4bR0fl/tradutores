@@ -6,6 +6,7 @@
     #include <string.h>    
     #include "../lib/tabela.h"
     #include "../lib/arvore.h"
+    #include "../lib/pilha.h"
 
 
     #define BRED "\e[0;31m"
@@ -19,11 +20,14 @@
     extern int yylex();
     extern int yylex_destroy();
     extern int yyparse();
-    void yyerror(const char* msg);
     extern FILE* yyin;
-
     extern int scope;
     extern symbol symbol_table[100000];
+    extern pilha scope_stack; 
+
+    void yyerror(const char* msg);
+
+    int last_element = 0;
     int table_index = 0;
     int table_size = 0;
     tree* root;
@@ -127,11 +131,14 @@ declaration:
 
 var_declaration:
     SIMPLE_TYPE ID ';' {
-        symbol new_symbol = add_symbol($2.line, $2.columns, $2.body, $1.body, 0, scope);
-        symbol_table[table_index] = new_symbol;
-        table_index++;
-        table_size++;
-
+        int create;
+        create = is_duplicated(symbol_table, $2.body, get_stack_top(&scope_stack), $2.line, $2.columns);
+        if(create == 0){
+            symbol new_symbol = add_symbol($2.line, $2.columns, $2.body, $1.body, 0, get_stack_top(&scope_stack));
+            symbol_table[table_index] = new_symbol;
+            table_index++;
+            table_size++;
+        }
         $$ = create_node("var_declaration");
         $$->node1 = create_node($1.body);
         $$->node2 = create_node($2.body);
@@ -140,10 +147,14 @@ var_declaration:
 
 function_declaration:
     SIMPLE_TYPE ID '(' params ')' '{' multiple_stmt '}' {
-        symbol new_symbol = add_symbol($2.line, $2.columns, $2.body, $1.body, 1, scope);
-        symbol_table[table_index] = new_symbol;
-        table_index++;
-        table_size++;   
+        int create;
+        create = is_duplicated(symbol_table, $2.body, get_stack_top(&scope_stack), $2.line, $2.columns);
+        if(create == 0){
+            symbol new_symbol = add_symbol($2.line, $2.columns, $2.body, $1.body, 1, get_stack_top(&scope_stack));
+            symbol_table[table_index] = new_symbol;
+            table_index++;
+            table_size++;   
+        }
 
         $$ = create_node("function_declaration");
         $$->node1 = create_node($1.body);
@@ -155,14 +166,18 @@ function_declaration:
         char str_simple_type[50];
         char str_list_type[50];
         char list_string[101];
-        strcpy(str_simple_type, $1.body);
-        strcat(str_simple_type, "\x20");
-        strcpy(str_list_type, $2.body);
-        strcpy(list_string, strcat(str_simple_type, str_list_type));
-        symbol new_symbol = add_symbol($3.line, $3.columns, $3.body, list_string, 1, scope);
-        symbol_table[table_index] = new_symbol;
-        table_index++;
-        table_size++;
+        int create;
+        create = is_duplicated(symbol_table, $3.body, get_stack_top(&scope_stack), $3.line, $3.columns);
+        if(create == 0){   
+            strcpy(str_simple_type, $1.body);
+            strcat(str_simple_type, "\x20");
+            strcpy(str_list_type, $2.body);
+            strcpy(list_string, strcat(str_simple_type, str_list_type));
+            symbol new_symbol = add_symbol($3.line, $3.columns, $3.body, list_string, 1, get_stack_top(&scope_stack));
+            symbol_table[table_index] = new_symbol;
+            table_index++;
+            table_size++;
+        }
         
         $$ = create_node("function_declaration");
         $$->node1 = create_node(list_string);
@@ -177,14 +192,18 @@ list_declaration:
         char str_simple_type[50];
         char str_list_type[50];
         char list_string[101];
-        strcpy(str_simple_type, $1.body);
-        strcat(str_simple_type, "\x20");
-        strcpy(str_list_type, $2.body);
-        strcpy(list_string, strcat(str_simple_type, str_list_type));
-        symbol new_symbol = add_symbol($3.line, $3.columns, $3.body, list_string, 0, scope);
-        symbol_table[table_index] = new_symbol;
-        table_index++;
-        table_size++;
+        int create;
+        create = is_duplicated(symbol_table, $3.body, get_stack_top(&scope_stack), $3.line, $3.columns);
+        if(create == 0){   
+            strcpy(str_simple_type, $1.body);
+            strcat(str_simple_type, "\x20");
+            strcpy(str_list_type, $2.body);
+            strcpy(list_string, strcat(str_simple_type, str_list_type));
+            symbol new_symbol = add_symbol($3.line, $3.columns, $3.body, list_string, 0, get_stack_top(&scope_stack));
+            symbol_table[table_index] = new_symbol;
+            table_index++;
+            table_size++;
+        }
 
         $$ = create_node("list_declaration");
         $$->node1 = create_node(list_string);
@@ -207,11 +226,43 @@ params:
 
 param:
     SIMPLE_TYPE ID {
+        int create;
+        scope++;
+        push(&scope_stack, scope);
+        create = is_duplicated(symbol_table, $2.body, get_stack_top(&scope_stack), $2.line, $2.columns);
+        if(create == 0){    
+            symbol new_symbol = add_symbol($2.line, $2.columns, $2.body, $1.body, 0, get_stack_top(&scope_stack));
+            pop(&scope_stack);
+            scope--;
+            symbol_table[table_index] = new_symbol;
+            table_index++;
+            table_size++;
+        }
         $$ = create_node("param");
         $$->node1 = create_node($1.body);
         $$->node2 = create_node($2.body);
     }
     | SIMPLE_TYPE LIST_TYPE ID {
+        char str_simple_type[50];
+        char str_list_type[50];
+        char list_string[101];
+        int create;
+        scope++;
+        push(&scope_stack, scope);
+        create = is_duplicated(symbol_table, $3.body, get_stack_top(&scope_stack), $3.line, $3.columns);
+        if(create == 0){
+            strcpy(str_simple_type, $1.body);
+            strcat(str_simple_type, "\x20");
+            strcpy(str_list_type, $2.body);
+            strcpy(list_string, strcat(str_simple_type, str_list_type));
+            symbol new_symbol = add_symbol($3.line, $3.columns, $3.body, list_string, 0, get_stack_top(&scope_stack));
+            pop(&scope_stack);
+            scope--;
+            symbol_table[table_index] = new_symbol;
+            table_index++;
+            table_size++;
+        }
+
         $$ = create_node("param");
         $$->node1 = create_node($1.body);
         $$->node2 = create_node($2.body);
@@ -480,6 +531,7 @@ void yyerror(const char* msg){
 }
 
 int main(int argc, char ** argv) {
+    init_stack(&scope_stack); 
     FILE *fp = fopen(argv[1], "r");
     if(argc > 1) {
         if(fp) {
@@ -496,7 +548,7 @@ int main(int argc, char ** argv) {
     print_table(table_size);
     if(errors == 0){
         printf(BCYAN"No errors detected\n" RESET);
-        print_tree(root, 0);
+        // print_tree(root, 0);
         free_node(root);
     }
     fclose(yyin);    

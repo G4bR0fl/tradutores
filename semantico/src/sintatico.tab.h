@@ -35,8 +35,8 @@
    especially those whose name start with YY_ or yy_.  They are
    private implementation details that can be changed or removed.  */
 
-#ifndef YY_YY_SRC_SINTATICO_TAB_H_INCLUDED
-# define YY_YY_SRC_SINTATICO_TAB_H_INCLUDED
+#ifndef YY_YY_SINTATICO_TAB_H_INCLUDED
+# define YY_YY_SINTATICO_TAB_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -86,7 +86,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 33 "src/sintatico.y"
+#line 37 "sintatico.y"
 
     struct Token {
         int columns;
@@ -95,7 +95,7 @@ union YYSTYPE
     } token;
     tree* node;
 
-#line 99 "src/sintatico.tab.h"
+#line 99 "sintatico.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -108,4 +108,4 @@ extern YYSTYPE yylval;
 
 int yyparse (void);
 
-#endif /* !YY_YY_SRC_SINTATICO_TAB_H_INCLUDED  */
+#endif /* !YY_YY_SINTATICO_TAB_H_INCLUDED  */
