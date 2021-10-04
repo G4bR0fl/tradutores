@@ -142,6 +142,7 @@ var_declaration:
         $$ = create_node("var_declaration");
         $$->node1 = create_node($1.body);
         $$->node2 = create_node($2.body);
+        $$->var_scope = get_stack_top(&scope_stack);
     }
 ;
 
@@ -161,6 +162,7 @@ function_declaration:
         $$->node2 = create_node($2.body);
         $$->node3 = $4;
         $$->node4 = $7;
+        $$->var_scope = get_stack_top(&scope_stack);
     }
     | SIMPLE_TYPE LIST_TYPE ID '(' params ')' '{' multiple_stmt '}' {
         char str_simple_type[50];
@@ -184,6 +186,7 @@ function_declaration:
         $$->node2 = create_node($3.body);
         $$->node3 = $5;
         $$->node4 = $8;
+        $$->var_scope = get_stack_top(&scope_stack);
     }
 ;
 
@@ -208,6 +211,7 @@ list_declaration:
         $$ = create_node("list_declaration");
         $$->node1 = create_node(list_string);
         $$->node2 = create_node($3.body);
+        $$->var_scope = get_stack_top(&scope_stack);
     }
     
 ;
@@ -319,17 +323,17 @@ return_stmt:
 
 general_declaration:
     general_declaration var_declaration {
-        $$ = create_node("general_declaration");
+        $$ = create_node("general_declaration -> var_declaration");
         $$->node1 = $1;
         $$->node2 = $2;
     }
     | general_declaration list_declaration {
-        $$ = create_node("general_declaration");
+        $$ = create_node("general_declaration -> list_declaration");
         $$->node1 = $1;
         $$->node2 = $2;
     }
     | general_declaration stmt {
-        $$ = create_node("general_declaration");
+        $$ = create_node("general_declaration -> stmt");
         $$->node1 = $1;
         $$->node2 = $2;
     }
@@ -352,6 +356,7 @@ expression:
         $$->node1 = create_node($1.body);
         $$->node2 = create_node($2.body);
         $$->node3 = $3;
+        $$->var_scope = get_stack_top(&scope_stack);
     } 
     | simple_expression {$$ = $1;}
     | binary_construct {$$ = $1;}
@@ -383,6 +388,7 @@ simple_expression:
         $$->node1 = $1;
         $$->node2 = create_node($2.body);
         $$->node3 = $3;
+        $$->var_scope = get_stack_top(&scope_stack);
     }
 ;   
 
@@ -392,6 +398,7 @@ relational_expression:
         $$->node1 = $1;
         $$->node2 = create_node($2.body);
         $$->node3 = $3;
+        $$->var_scope = get_stack_top(&scope_stack);
     }
     | arithmetic_expression {$$ = $1;}
 ;
@@ -402,21 +409,25 @@ arithmetic_expression:
         $$->node1 = $1;
         $$->node2 = create_node($2.body);
         $$->node3 = $3;
+        $$->var_scope = get_stack_top(&scope_stack);
     } 
     | BINARY_BASIC_OP1 term {
         $$ = create_node("arithmetic_expression");
         $$->node1 = create_node($1.body);
         $$->node2 = $2;
+        $$->var_scope = get_stack_top(&scope_stack);
     }
     | BINARY_COMP_OP term {
         $$ = create_node("arithmetic_expression");
         $$->node1 = create_node($1.body);
         $$->node2 = $2;
+        $$->var_scope = get_stack_top(&scope_stack);
     }
     | TAIL term {
         $$ = create_node("arithmetic_expression");
         $$->node1 = create_node($1.body);
         $$->node2 = $2;
+        $$->var_scope = get_stack_top(&scope_stack);
     }
     | term {$$ = $1;}
 ;
@@ -427,25 +438,31 @@ term:
         $$->node1 = $1;
         $$->node2 = create_node($2.body);
         $$->node3 = $3;
+        $$->var_scope = get_stack_top(&scope_stack);
     }
     | factor {$$ = $1;}
 ;
 
 factor:
     '(' expression ')' {$$ = $2;} 
-    | ID {$$ = create_node($1.body);}
+    | ID {
+        $$ = create_node($1.body);
+        $$->var_scope = get_stack_top(&scope_stack);
+    }
     | INT {$$ = create_node($1.body);}
     | FLOAT {$$ = create_node($1.body);}
     | ID '(' expression ')' {
         $$ = create_node("factor");
         $$->node1 = create_node($1.body);
         $$->node2 = $3;
+        $$->var_scope = get_stack_top(&scope_stack);
     } 
     | LIST_CONSTANT {$$ = create_node($1.body);}
     | HEADER ID {
         $$ = create_node("factor");
         $$->node1 = create_node($1.body);
         $$->node2 = create_node($2.body);
+        $$->var_scope = get_stack_top(&scope_stack);
     }
 ;
 
@@ -549,6 +566,7 @@ int main(int argc, char ** argv) {
     if(errors == 0){
         printf(BCYAN"No errors detected\n" RESET);
         print_tree(root, 0);
+        search_undeclared_node(root, symbol_table, 0);
         free_node(root);
     }
     fclose(yyin);    

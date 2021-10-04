@@ -577,13 +577,13 @@ static const yytype_int8 yytranslate[] =
 static const yytype_int16 yyrline[] =
 {
        0,   107,   107,   115,   120,   126,   127,   128,   129,   133,
-     149,   165,   191,   216,   220,   221,   224,   228,   245,   274,
-     283,   291,   302,   313,   314,   321,   326,   331,   336,   342,
-     346,   350,   356,   357,   358,   359,   363,   364,   368,   369,
-     370,   371,   372,   373,   374,   375,   380,   381,   390,   396,
-     400,   406,   411,   416,   421,   425,   431,   435,   436,   437,
-     438,   439,   444,   445,   453,   458,   466,   474,   483,   489,
-     490,   494,   500,   509,   515,   521
+     150,   167,   194,   220,   224,   225,   228,   232,   249,   278,
+     287,   295,   306,   317,   318,   325,   330,   335,   340,   346,
+     350,   354,   361,   362,   363,   364,   368,   369,   373,   374,
+     375,   376,   377,   378,   379,   380,   385,   386,   396,   403,
+     407,   414,   420,   426,   432,   436,   443,   447,   448,   452,
+     453,   454,   460,   461,   470,   475,   483,   491,   500,   506,
+     507,   511,   517,   526,   532,   538
 };
 #endif
 
@@ -2065,12 +2065,13 @@ yyreduce:
         (yyval.node) = create_node("var_declaration");
         (yyval.node)->node1 = create_node((yyvsp[-2].token).body);
         (yyval.node)->node2 = create_node((yyvsp[-1].token).body);
+        (yyval.node)->var_scope = get_stack_top(&scope_stack);
     }
-#line 2070 "sintatico.tab.c"
+#line 2071 "sintatico.tab.c"
     break;
 
   case 10: /* function_declaration: SIMPLE_TYPE ID '(' params ')' '{' multiple_stmt '}'  */
-#line 149 "sintatico.y"
+#line 150 "sintatico.y"
                                                         {
         int create;
         create = is_duplicated(symbol_table, (yyvsp[-6].token).body, get_stack_top(&scope_stack), (yyvsp[-6].token).line, (yyvsp[-6].token).columns);
@@ -2086,12 +2087,13 @@ yyreduce:
         (yyval.node)->node2 = create_node((yyvsp[-6].token).body);
         (yyval.node)->node3 = (yyvsp[-4].node);
         (yyval.node)->node4 = (yyvsp[-1].node);
+        (yyval.node)->var_scope = get_stack_top(&scope_stack);
     }
-#line 2091 "sintatico.tab.c"
+#line 2093 "sintatico.tab.c"
     break;
 
   case 11: /* function_declaration: SIMPLE_TYPE LIST_TYPE ID '(' params ')' '{' multiple_stmt '}'  */
-#line 165 "sintatico.y"
+#line 167 "sintatico.y"
                                                                     {
         char str_simple_type[50];
         char str_list_type[50];
@@ -2114,12 +2116,13 @@ yyreduce:
         (yyval.node)->node2 = create_node((yyvsp[-6].token).body);
         (yyval.node)->node3 = (yyvsp[-4].node);
         (yyval.node)->node4 = (yyvsp[-1].node);
+        (yyval.node)->var_scope = get_stack_top(&scope_stack);
     }
-#line 2119 "sintatico.tab.c"
+#line 2122 "sintatico.tab.c"
     break;
 
   case 12: /* list_declaration: SIMPLE_TYPE LIST_TYPE ID ';'  */
-#line 191 "sintatico.y"
+#line 194 "sintatico.y"
                                  {
         char str_simple_type[50];
         char str_list_type[50];
@@ -2140,41 +2143,42 @@ yyreduce:
         (yyval.node) = create_node("list_declaration");
         (yyval.node)->node1 = create_node(list_string);
         (yyval.node)->node2 = create_node((yyvsp[-1].token).body);
+        (yyval.node)->var_scope = get_stack_top(&scope_stack);
     }
-#line 2145 "sintatico.tab.c"
+#line 2149 "sintatico.tab.c"
     break;
 
   case 13: /* params: params ',' param  */
-#line 216 "sintatico.y"
+#line 220 "sintatico.y"
                      {
         (yyval.node) = create_node("params");
         (yyval.node)->node1 = (yyvsp[0].node);
     }
-#line 2154 "sintatico.tab.c"
+#line 2158 "sintatico.tab.c"
     break;
 
   case 14: /* params: param  */
-#line 220 "sintatico.y"
+#line 224 "sintatico.y"
             {(yyval.node) = (yyvsp[0].node);}
-#line 2160 "sintatico.tab.c"
+#line 2164 "sintatico.tab.c"
     break;
 
   case 15: /* params: %empty  */
-#line 221 "sintatico.y"
+#line 225 "sintatico.y"
              {
         (yyval.node) = create_node("empty");
     }
-#line 2168 "sintatico.tab.c"
+#line 2172 "sintatico.tab.c"
     break;
 
   case 16: /* params: error  */
-#line 224 "sintatico.y"
+#line 228 "sintatico.y"
             {yyerrok;}
-#line 2174 "sintatico.tab.c"
+#line 2178 "sintatico.tab.c"
     break;
 
   case 17: /* param: SIMPLE_TYPE ID  */
-#line 228 "sintatico.y"
+#line 232 "sintatico.y"
                    {
         int create;
         scope++;
@@ -2192,11 +2196,11 @@ yyreduce:
         (yyval.node)->node1 = create_node((yyvsp[-1].token).body);
         (yyval.node)->node2 = create_node((yyvsp[0].token).body);
     }
-#line 2196 "sintatico.tab.c"
+#line 2200 "sintatico.tab.c"
     break;
 
   case 18: /* param: SIMPLE_TYPE LIST_TYPE ID  */
-#line 245 "sintatico.y"
+#line 249 "sintatico.y"
                                {
         char str_simple_type[50];
         char str_list_type[50];
@@ -2223,22 +2227,22 @@ yyreduce:
         (yyval.node)->node2 = create_node((yyvsp[-1].token).body);
         (yyval.node)->node3 = create_node((yyvsp[0].token).body);
     }
-#line 2227 "sintatico.tab.c"
+#line 2231 "sintatico.tab.c"
     break;
 
   case 19: /* if_stmt: IF '(' expression ')' '{' multiple_stmt '}'  */
-#line 274 "sintatico.y"
+#line 278 "sintatico.y"
                                                 {
         (yyval.node) = create_node("if_stmt");
         (yyval.node)->node1 = create_node((yyvsp[-6].token).body);
         (yyval.node)->node2 = (yyvsp[-4].node);
         (yyval.node)->node3 = (yyvsp[-1].node);
     }
-#line 2238 "sintatico.tab.c"
+#line 2242 "sintatico.tab.c"
     break;
 
   case 20: /* if_else_stmt: IF '(' expression ')' '{' multiple_stmt '}' ELSE '{' multiple_stmt '}'  */
-#line 283 "sintatico.y"
+#line 287 "sintatico.y"
                                                                            {
         (yyval.node) = create_node("if_else_stmt");
         (yyval.node)->node1 = create_node((yyvsp[-10].token).body);
@@ -2247,11 +2251,11 @@ yyreduce:
         (yyval.node)->node4 = create_node((yyvsp[-3].token).body);
         (yyval.node)->node5 = (yyvsp[-1].node);
     }
-#line 2251 "sintatico.tab.c"
+#line 2255 "sintatico.tab.c"
     break;
 
   case 21: /* if_else_stmt: IF '(' expression ')' '{' multiple_stmt '}' ELSE stmt  */
-#line 291 "sintatico.y"
+#line 295 "sintatico.y"
                                                             {
         (yyval.node) = create_node("if_else_stmt");
         (yyval.node)->node1 = create_node((yyvsp[-8].token).body);
@@ -2260,11 +2264,11 @@ yyreduce:
         (yyval.node)->node4 = create_node((yyvsp[-1].token).body);
         (yyval.node)->node5 = (yyvsp[0].node);
     }
-#line 2264 "sintatico.tab.c"
+#line 2268 "sintatico.tab.c"
     break;
 
   case 22: /* for_stmt: FOR '(' for_variation_null_expressions ';' for_variation_null_expressions ';' for_variation_null_expressions ')' '{' multiple_stmt '}'  */
-#line 302 "sintatico.y"
+#line 306 "sintatico.y"
                                                                                                                                            {
         (yyval.node) = create_node("for_stmt");
         (yyval.node)->node1 = create_node((yyvsp[-10].token).body);
@@ -2273,433 +2277,446 @@ yyreduce:
         (yyval.node)->node4 = (yyvsp[-4].node);
         (yyval.node)->node5 = (yyvsp[-1].node);
     }
-#line 2277 "sintatico.tab.c"
+#line 2281 "sintatico.tab.c"
     break;
 
   case 23: /* return_stmt: RETURN ';'  */
-#line 313 "sintatico.y"
+#line 317 "sintatico.y"
                {(yyval.node) = create_node((yyvsp[-1].token).body);}
-#line 2283 "sintatico.tab.c"
+#line 2287 "sintatico.tab.c"
     break;
 
   case 24: /* return_stmt: RETURN expression ';'  */
-#line 314 "sintatico.y"
+#line 318 "sintatico.y"
                             {
         (yyval.node) = create_node((yyvsp[-2].token).body);
         (yyval.node)->node1 = (yyvsp[-1].node);
     }
-#line 2292 "sintatico.tab.c"
+#line 2296 "sintatico.tab.c"
     break;
 
   case 25: /* general_declaration: general_declaration var_declaration  */
-#line 321 "sintatico.y"
+#line 325 "sintatico.y"
                                         {
-        (yyval.node) = create_node("general_declaration");
+        (yyval.node) = create_node("general_declaration -> var_declaration");
         (yyval.node)->node1 = (yyvsp[-1].node);
         (yyval.node)->node2 = (yyvsp[0].node);
     }
-#line 2302 "sintatico.tab.c"
+#line 2306 "sintatico.tab.c"
     break;
 
   case 26: /* general_declaration: general_declaration list_declaration  */
-#line 326 "sintatico.y"
+#line 330 "sintatico.y"
                                            {
-        (yyval.node) = create_node("general_declaration");
+        (yyval.node) = create_node("general_declaration -> list_declaration");
         (yyval.node)->node1 = (yyvsp[-1].node);
         (yyval.node)->node2 = (yyvsp[0].node);
     }
-#line 2312 "sintatico.tab.c"
+#line 2316 "sintatico.tab.c"
     break;
 
   case 27: /* general_declaration: general_declaration stmt  */
-#line 331 "sintatico.y"
+#line 335 "sintatico.y"
                                {
-        (yyval.node) = create_node("general_declaration");
+        (yyval.node) = create_node("general_declaration -> stmt");
         (yyval.node)->node1 = (yyvsp[-1].node);
         (yyval.node)->node2 = (yyvsp[0].node);
     }
-#line 2322 "sintatico.tab.c"
+#line 2326 "sintatico.tab.c"
     break;
 
   case 28: /* general_declaration: %empty  */
-#line 336 "sintatico.y"
+#line 340 "sintatico.y"
              {
         (yyval.node) = create_node("empty");
     }
-#line 2330 "sintatico.tab.c"
+#line 2334 "sintatico.tab.c"
     break;
 
   case 29: /* multiple_stmt: general_declaration  */
-#line 342 "sintatico.y"
+#line 346 "sintatico.y"
                         {(yyval.node) = (yyvsp[0].node);}
-#line 2336 "sintatico.tab.c"
+#line 2340 "sintatico.tab.c"
     break;
 
   case 30: /* expression_stmt: expression ';'  */
-#line 346 "sintatico.y"
+#line 350 "sintatico.y"
                    {(yyval.node) = (yyvsp[-1].node);}
-#line 2342 "sintatico.tab.c"
+#line 2346 "sintatico.tab.c"
     break;
 
   case 31: /* expression: ID '=' expression  */
-#line 350 "sintatico.y"
+#line 354 "sintatico.y"
                       {
         (yyval.node) = create_node("expression");
         (yyval.node)->node1 = create_node((yyvsp[-2].token).body);
         (yyval.node)->node2 = create_node((yyvsp[-1].token).body);
         (yyval.node)->node3 = (yyvsp[0].node);
+        (yyval.node)->var_scope = get_stack_top(&scope_stack);
     }
-#line 2353 "sintatico.tab.c"
+#line 2358 "sintatico.tab.c"
     break;
 
   case 32: /* expression: simple_expression  */
-#line 356 "sintatico.y"
+#line 361 "sintatico.y"
                         {(yyval.node) = (yyvsp[0].node);}
-#line 2359 "sintatico.tab.c"
+#line 2364 "sintatico.tab.c"
     break;
 
   case 33: /* expression: binary_construct  */
-#line 357 "sintatico.y"
+#line 362 "sintatico.y"
                        {(yyval.node) = (yyvsp[0].node);}
-#line 2365 "sintatico.tab.c"
+#line 2370 "sintatico.tab.c"
     break;
 
   case 34: /* expression: list_operation  */
-#line 358 "sintatico.y"
+#line 363 "sintatico.y"
                      {(yyval.node) = (yyvsp[0].node);}
-#line 2371 "sintatico.tab.c"
+#line 2376 "sintatico.tab.c"
     break;
 
   case 35: /* expression: error  */
-#line 359 "sintatico.y"
+#line 364 "sintatico.y"
             {yyerrok;}
-#line 2377 "sintatico.tab.c"
+#line 2382 "sintatico.tab.c"
     break;
 
   case 36: /* for_variation_null_expressions: expression  */
-#line 363 "sintatico.y"
+#line 368 "sintatico.y"
                {(yyval.node) = (yyvsp[0].node);}
-#line 2383 "sintatico.tab.c"
+#line 2388 "sintatico.tab.c"
     break;
 
   case 37: /* for_variation_null_expressions: %empty  */
-#line 364 "sintatico.y"
+#line 369 "sintatico.y"
             {(yyval.node) = create_node("empty");}
-#line 2389 "sintatico.tab.c"
+#line 2394 "sintatico.tab.c"
     break;
 
   case 38: /* stmt: expression_stmt  */
-#line 368 "sintatico.y"
+#line 373 "sintatico.y"
                     {(yyval.node) = (yyvsp[0].node);}
-#line 2395 "sintatico.tab.c"
+#line 2400 "sintatico.tab.c"
     break;
 
   case 39: /* stmt: if_stmt  */
-#line 369 "sintatico.y"
+#line 374 "sintatico.y"
               {(yyval.node) = (yyvsp[0].node);}
-#line 2401 "sintatico.tab.c"
+#line 2406 "sintatico.tab.c"
     break;
 
   case 40: /* stmt: if_else_stmt  */
-#line 370 "sintatico.y"
+#line 375 "sintatico.y"
                    {(yyval.node) = (yyvsp[0].node);}
-#line 2407 "sintatico.tab.c"
+#line 2412 "sintatico.tab.c"
     break;
 
   case 41: /* stmt: for_stmt  */
-#line 371 "sintatico.y"
+#line 376 "sintatico.y"
                {(yyval.node) = (yyvsp[0].node);}
-#line 2413 "sintatico.tab.c"
+#line 2418 "sintatico.tab.c"
     break;
 
   case 42: /* stmt: return_stmt  */
-#line 372 "sintatico.y"
+#line 377 "sintatico.y"
                   {(yyval.node) = (yyvsp[0].node);}
-#line 2419 "sintatico.tab.c"
+#line 2424 "sintatico.tab.c"
     break;
 
   case 43: /* stmt: print  */
-#line 373 "sintatico.y"
+#line 378 "sintatico.y"
             {(yyval.node) = (yyvsp[0].node);}
-#line 2425 "sintatico.tab.c"
+#line 2430 "sintatico.tab.c"
     break;
 
   case 44: /* stmt: scan  */
-#line 374 "sintatico.y"
+#line 379 "sintatico.y"
            {(yyval.node) = (yyvsp[0].node);}
-#line 2431 "sintatico.tab.c"
+#line 2436 "sintatico.tab.c"
     break;
 
   case 45: /* stmt: error  */
-#line 375 "sintatico.y"
+#line 380 "sintatico.y"
             {yyerrok;}
-#line 2437 "sintatico.tab.c"
+#line 2442 "sintatico.tab.c"
     break;
 
   case 46: /* simple_expression: relational_expression  */
-#line 380 "sintatico.y"
+#line 385 "sintatico.y"
                           {(yyval.node) = (yyvsp[0].node);}
-#line 2443 "sintatico.tab.c"
+#line 2448 "sintatico.tab.c"
     break;
 
   case 47: /* simple_expression: arithmetic_expression LOGIC_OP arithmetic_expression  */
-#line 381 "sintatico.y"
+#line 386 "sintatico.y"
                                                            {
         (yyval.node) = create_node("simple_expression");
         (yyval.node)->node1 = (yyvsp[-2].node);
         (yyval.node)->node2 = create_node((yyvsp[-1].token).body);
         (yyval.node)->node3 = (yyvsp[0].node);
+        (yyval.node)->var_scope = get_stack_top(&scope_stack);
     }
-#line 2454 "sintatico.tab.c"
+#line 2460 "sintatico.tab.c"
     break;
 
   case 48: /* relational_expression: relational_expression BINARY_COMP_OP arithmetic_expression  */
-#line 390 "sintatico.y"
+#line 396 "sintatico.y"
                                                                {
         (yyval.node) = create_node("relational_expression");
         (yyval.node)->node1 = (yyvsp[-2].node);
         (yyval.node)->node2 = create_node((yyvsp[-1].token).body);
         (yyval.node)->node3 = (yyvsp[0].node);
+        (yyval.node)->var_scope = get_stack_top(&scope_stack);
     }
-#line 2465 "sintatico.tab.c"
+#line 2472 "sintatico.tab.c"
     break;
 
   case 49: /* relational_expression: arithmetic_expression  */
-#line 396 "sintatico.y"
+#line 403 "sintatico.y"
                             {(yyval.node) = (yyvsp[0].node);}
-#line 2471 "sintatico.tab.c"
+#line 2478 "sintatico.tab.c"
     break;
 
   case 50: /* arithmetic_expression: arithmetic_expression BINARY_BASIC_OP1 term  */
-#line 400 "sintatico.y"
+#line 407 "sintatico.y"
                                                 {
         (yyval.node) = create_node("arithmetic_expression");
         (yyval.node)->node1 = (yyvsp[-2].node);
         (yyval.node)->node2 = create_node((yyvsp[-1].token).body);
         (yyval.node)->node3 = (yyvsp[0].node);
+        (yyval.node)->var_scope = get_stack_top(&scope_stack);
     }
-#line 2482 "sintatico.tab.c"
+#line 2490 "sintatico.tab.c"
     break;
 
   case 51: /* arithmetic_expression: BINARY_BASIC_OP1 term  */
-#line 406 "sintatico.y"
+#line 414 "sintatico.y"
                             {
         (yyval.node) = create_node("arithmetic_expression");
         (yyval.node)->node1 = create_node((yyvsp[-1].token).body);
         (yyval.node)->node2 = (yyvsp[0].node);
+        (yyval.node)->var_scope = get_stack_top(&scope_stack);
     }
-#line 2492 "sintatico.tab.c"
+#line 2501 "sintatico.tab.c"
     break;
 
   case 52: /* arithmetic_expression: BINARY_COMP_OP term  */
-#line 411 "sintatico.y"
+#line 420 "sintatico.y"
                           {
         (yyval.node) = create_node("arithmetic_expression");
         (yyval.node)->node1 = create_node((yyvsp[-1].token).body);
         (yyval.node)->node2 = (yyvsp[0].node);
-    }
-#line 2502 "sintatico.tab.c"
-    break;
-
-  case 53: /* arithmetic_expression: TAIL term  */
-#line 416 "sintatico.y"
-                {
-        (yyval.node) = create_node("arithmetic_expression");
-        (yyval.node)->node1 = create_node((yyvsp[-1].token).body);
-        (yyval.node)->node2 = (yyvsp[0].node);
+        (yyval.node)->var_scope = get_stack_top(&scope_stack);
     }
 #line 2512 "sintatico.tab.c"
     break;
 
+  case 53: /* arithmetic_expression: TAIL term  */
+#line 426 "sintatico.y"
+                {
+        (yyval.node) = create_node("arithmetic_expression");
+        (yyval.node)->node1 = create_node((yyvsp[-1].token).body);
+        (yyval.node)->node2 = (yyvsp[0].node);
+        (yyval.node)->var_scope = get_stack_top(&scope_stack);
+    }
+#line 2523 "sintatico.tab.c"
+    break;
+
   case 54: /* arithmetic_expression: term  */
-#line 421 "sintatico.y"
+#line 432 "sintatico.y"
            {(yyval.node) = (yyvsp[0].node);}
-#line 2518 "sintatico.tab.c"
+#line 2529 "sintatico.tab.c"
     break;
 
   case 55: /* term: term BINARY_BASIC_OP2 factor  */
-#line 425 "sintatico.y"
+#line 436 "sintatico.y"
                                  {
         (yyval.node) = create_node("term");
         (yyval.node)->node1 = (yyvsp[-2].node);
         (yyval.node)->node2 = create_node((yyvsp[-1].token).body);
         (yyval.node)->node3 = (yyvsp[0].node);
+        (yyval.node)->var_scope = get_stack_top(&scope_stack);
     }
-#line 2529 "sintatico.tab.c"
-    break;
-
-  case 56: /* term: factor  */
-#line 431 "sintatico.y"
-             {(yyval.node) = (yyvsp[0].node);}
-#line 2535 "sintatico.tab.c"
-    break;
-
-  case 57: /* factor: '(' expression ')'  */
-#line 435 "sintatico.y"
-                       {(yyval.node) = (yyvsp[-1].node);}
 #line 2541 "sintatico.tab.c"
     break;
 
-  case 58: /* factor: ID  */
-#line 436 "sintatico.y"
-         {(yyval.node) = create_node((yyvsp[0].token).body);}
+  case 56: /* term: factor  */
+#line 443 "sintatico.y"
+             {(yyval.node) = (yyvsp[0].node);}
 #line 2547 "sintatico.tab.c"
     break;
 
-  case 59: /* factor: INT  */
-#line 437 "sintatico.y"
-          {(yyval.node) = create_node((yyvsp[0].token).body);}
+  case 57: /* factor: '(' expression ')'  */
+#line 447 "sintatico.y"
+                       {(yyval.node) = (yyvsp[-1].node);}
 #line 2553 "sintatico.tab.c"
     break;
 
+  case 58: /* factor: ID  */
+#line 448 "sintatico.y"
+         {
+        (yyval.node) = create_node((yyvsp[0].token).body);
+        (yyval.node)->var_scope = get_stack_top(&scope_stack);
+    }
+#line 2562 "sintatico.tab.c"
+    break;
+
+  case 59: /* factor: INT  */
+#line 452 "sintatico.y"
+          {(yyval.node) = create_node((yyvsp[0].token).body);}
+#line 2568 "sintatico.tab.c"
+    break;
+
   case 60: /* factor: FLOAT  */
-#line 438 "sintatico.y"
+#line 453 "sintatico.y"
             {(yyval.node) = create_node((yyvsp[0].token).body);}
-#line 2559 "sintatico.tab.c"
+#line 2574 "sintatico.tab.c"
     break;
 
   case 61: /* factor: ID '(' expression ')'  */
-#line 439 "sintatico.y"
+#line 454 "sintatico.y"
                             {
         (yyval.node) = create_node("factor");
         (yyval.node)->node1 = create_node((yyvsp[-3].token).body);
         (yyval.node)->node2 = (yyvsp[-1].node);
-    }
-#line 2569 "sintatico.tab.c"
-    break;
-
-  case 62: /* factor: LIST_CONSTANT  */
-#line 444 "sintatico.y"
-                    {(yyval.node) = create_node((yyvsp[0].token).body);}
-#line 2575 "sintatico.tab.c"
-    break;
-
-  case 63: /* factor: HEADER ID  */
-#line 445 "sintatico.y"
-                {
-        (yyval.node) = create_node("factor");
-        (yyval.node)->node1 = create_node((yyvsp[-1].token).body);
-        (yyval.node)->node2 = create_node((yyvsp[0].token).body);
+        (yyval.node)->var_scope = get_stack_top(&scope_stack);
     }
 #line 2585 "sintatico.tab.c"
     break;
 
+  case 62: /* factor: LIST_CONSTANT  */
+#line 460 "sintatico.y"
+                    {(yyval.node) = create_node((yyvsp[0].token).body);}
+#line 2591 "sintatico.tab.c"
+    break;
+
+  case 63: /* factor: HEADER ID  */
+#line 461 "sintatico.y"
+                {
+        (yyval.node) = create_node("factor");
+        (yyval.node)->node1 = create_node((yyvsp[-1].token).body);
+        (yyval.node)->node2 = create_node((yyvsp[0].token).body);
+        (yyval.node)->var_scope = get_stack_top(&scope_stack);
+    }
+#line 2602 "sintatico.tab.c"
+    break;
+
   case 64: /* print: OUTPUT '(' STRING ')' ';'  */
-#line 453 "sintatico.y"
+#line 470 "sintatico.y"
                               {
         (yyval.node) = create_node("print");
         (yyval.node)->node1 = create_node((yyvsp[-4].token).body);
         (yyval.node)->node2 = create_node((yyvsp[-2].token).body);
     }
-#line 2595 "sintatico.tab.c"
+#line 2612 "sintatico.tab.c"
     break;
 
   case 65: /* print: OUTPUT '(' expression ')' ';'  */
-#line 458 "sintatico.y"
+#line 475 "sintatico.y"
                                     {
         (yyval.node) = create_node("print");
         (yyval.node)->node1 = create_node((yyvsp[-4].token).body);
         (yyval.node)->node2 = (yyvsp[-2].node);
     }
-#line 2605 "sintatico.tab.c"
+#line 2622 "sintatico.tab.c"
     break;
 
   case 66: /* scan: INPUT '(' ID ')' ';'  */
-#line 466 "sintatico.y"
+#line 483 "sintatico.y"
                          {
         (yyval.node) = create_node("scan");
         (yyval.node)->node1 = create_node((yyvsp[-4].token).body);
         (yyval.node)->node2 = create_node((yyvsp[-2].token).body);
     }
-#line 2615 "sintatico.tab.c"
+#line 2632 "sintatico.tab.c"
     break;
 
   case 67: /* binary_construct: binary_construct_recursive BINARY_CONSTRUCTOR ID  */
-#line 474 "sintatico.y"
+#line 491 "sintatico.y"
                                                      {
         (yyval.node) = create_node("binary_constructor");
         (yyval.node)->node1 = (yyvsp[-2].node);
         (yyval.node)->node2 = create_node((yyvsp[-1].token).body);
         (yyval.node)->node3 = create_node((yyvsp[0].token).body);
     }
-#line 2626 "sintatico.tab.c"
+#line 2643 "sintatico.tab.c"
     break;
 
   case 68: /* binary_construct_recursive: binary_construct_recursive BINARY_CONSTRUCTOR simple_expression  */
-#line 483 "sintatico.y"
+#line 500 "sintatico.y"
                                                                     {
         (yyval.node) = create_node("binary_constructor_recursive");
         (yyval.node)->node1 = (yyvsp[-2].node);
         (yyval.node)->node2 = create_node((yyvsp[-1].token).body);
         (yyval.node)->node3 = (yyvsp[0].node);
     }
-#line 2637 "sintatico.tab.c"
+#line 2654 "sintatico.tab.c"
     break;
 
   case 69: /* binary_construct_recursive: simple_expression  */
-#line 489 "sintatico.y"
+#line 506 "sintatico.y"
                         {(yyval.node) = (yyvsp[0].node);}
-#line 2643 "sintatico.tab.c"
+#line 2660 "sintatico.tab.c"
     break;
 
   case 70: /* binary_construct_recursive: error  */
-#line 490 "sintatico.y"
+#line 507 "sintatico.y"
             {yyerrok;}
-#line 2649 "sintatico.tab.c"
+#line 2666 "sintatico.tab.c"
     break;
 
   case 71: /* list_operation: recursive_list_operation MAP ID  */
-#line 494 "sintatico.y"
+#line 511 "sintatico.y"
                                     {
         (yyval.node) = create_node("list_operation");
         (yyval.node)->node1 = (yyvsp[-2].node);
         (yyval.node)->node2 = create_node((yyvsp[-1].token).body);
         (yyval.node)->node3 = create_node((yyvsp[0].token).body);
     }
-#line 2660 "sintatico.tab.c"
+#line 2677 "sintatico.tab.c"
     break;
 
   case 72: /* list_operation: recursive_list_operation FILTER ID  */
-#line 500 "sintatico.y"
+#line 517 "sintatico.y"
                                          {
         (yyval.node) = create_node("list_operation");
         (yyval.node)->node1 = (yyvsp[-2].node);
         (yyval.node)->node2 = create_node((yyvsp[-1].token).body);
         (yyval.node)->node3 = create_node((yyvsp[0].token).body);
     }
-#line 2671 "sintatico.tab.c"
+#line 2688 "sintatico.tab.c"
     break;
 
   case 73: /* recursive_list_operation: recursive_list_operation MAP ID  */
-#line 509 "sintatico.y"
+#line 526 "sintatico.y"
                                     {
         (yyval.node) = create_node("recursive_list_operation");
         (yyval.node)->node1 = (yyvsp[-2].node);
         (yyval.node)->node2 = create_node((yyvsp[-1].token).body);
         (yyval.node)->node3 = create_node((yyvsp[0].token).body);       
     }
-#line 2682 "sintatico.tab.c"
+#line 2699 "sintatico.tab.c"
     break;
 
   case 74: /* recursive_list_operation: recursive_list_operation FILTER ID  */
-#line 515 "sintatico.y"
+#line 532 "sintatico.y"
                                          {
         (yyval.node) = create_node("recursive_list_operation");
         (yyval.node)->node1 = (yyvsp[-2].node);
         (yyval.node)->node2 = create_node((yyvsp[-1].token).body);
         (yyval.node)->node3 = create_node((yyvsp[0].token).body);
     }
-#line 2693 "sintatico.tab.c"
+#line 2710 "sintatico.tab.c"
     break;
 
   case 75: /* recursive_list_operation: ID  */
-#line 521 "sintatico.y"
+#line 538 "sintatico.y"
          {(yyval.node) = create_node((yyvsp[0].token).body);}
-#line 2699 "sintatico.tab.c"
+#line 2716 "sintatico.tab.c"
     break;
 
 
-#line 2703 "sintatico.tab.c"
+#line 2720 "sintatico.tab.c"
 
       default: break;
     }
@@ -2924,7 +2941,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 524 "sintatico.y"
+#line 541 "sintatico.y"
 
 
 void yyerror(const char* msg){
@@ -2953,6 +2970,7 @@ int main(int argc, char ** argv) {
     if(errors == 0){
         printf(BCYAN"No errors detected\n" RESET);
         print_tree(root, 0);
+        search_undeclared_node(root, symbol_table, 0);
         free_node(root);
     }
     fclose(yyin);    

@@ -47,6 +47,7 @@ int is_duplicated(symbol* s, char* identifier, int scope, int line, int column){
     return 0;
 }
 
+
 void print_table(int size){
     int i;
     if(size > 0){
