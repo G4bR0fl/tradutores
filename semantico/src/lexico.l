@@ -20,6 +20,7 @@
     int scope = 0;
 
     extern pilha scope_stack;
+    extern int auxiliary_list[1000];
 %}
 
 SIMPLE_TYPE         int|float
@@ -240,12 +241,8 @@ FILTER              "<<"
     yylval.token.line = line;
     columns += yyleng;
     scope++;
-    push(&scope_stack, scope);
-    // printf("\nPUSH\n");
-    // for(int i = 0; i < 15; i++){
-    //     printf("%d -> ", scope_stack.scope_array[i]);
-    // }
-    printf("\n");
+    push_auxiliary_scope_list(scope, auxiliary_list);
+    push(&scope_stack, scope, auxiliary_list);
     return '{';
 }
 
@@ -254,11 +251,8 @@ FILTER              "<<"
     yylval.token.columns = columns;
     yylval.token.line = line;
     columns += yyleng;
-    pop(&scope_stack);
-    // printf("\nPOP\n");
-    // for(int i = 0; i < 15; i++){
-    //     printf("%d -> ", scope_stack.scope_array[i]);
-    // }
+    pop(&scope_stack);  
+    empty_aux_list(auxiliary_list);
     return '}';
 }
 
@@ -283,9 +277,11 @@ FILTER              "<<"
 }
 
 . {
-    printf(BRED"(%d:%d)Unidentified character: '%s'\n" RESET, line, columns, yytext);
+    printf(BRED"(%d:%d) Unidentified character: '%s'\n" RESET, line, columns, yytext);
     errors++;
     columns += yyleng;
 }
 
 %%
+
+// codigo em c aqui

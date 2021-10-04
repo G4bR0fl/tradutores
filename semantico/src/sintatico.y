@@ -24,6 +24,7 @@
     extern int scope;
     extern symbol symbol_table[100000];
     extern pilha scope_stack; 
+    extern int auxiliary_list[1000];
 
     void yyerror(const char* msg);
 
@@ -232,7 +233,7 @@ param:
     SIMPLE_TYPE ID {
         int create;
         scope++;
-        push(&scope_stack, scope);
+        push(&scope_stack, scope, auxiliary_list);
         create = is_duplicated(symbol_table, $2.body, get_stack_top(&scope_stack), $2.line, $2.columns);
         if(create == 0){    
             symbol new_symbol = add_symbol($2.line, $2.columns, $2.body, $1.body, 0, get_stack_top(&scope_stack));
@@ -252,7 +253,7 @@ param:
         char list_string[101];
         int create;
         scope++;
-        push(&scope_stack, scope);
+        push(&scope_stack, scope, auxiliary_list);
         create = is_duplicated(symbol_table, $3.body, get_stack_top(&scope_stack), $3.line, $3.columns);
         if(create == 0){
             strcpy(str_simple_type, $1.body);
@@ -548,7 +549,8 @@ void yyerror(const char* msg){
 }
 
 int main(int argc, char ** argv) {
-    init_stack(&scope_stack); 
+    init_stack(&scope_stack);
+    init_aux_list(auxiliary_list);
     FILE *fp = fopen(argv[1], "r");
     if(argc > 1) {
         if(fp) {
@@ -562,11 +564,12 @@ int main(int argc, char ** argv) {
     else {
         printf("No input given.\n");
     }
+    main_detection(table_size);
     print_table(table_size);
     if(errors == 0){
-        printf(BCYAN"No errors detected\n" RESET);
-        print_tree(root, 0);
-        search_undeclared_node(root, symbol_table, 0);
+        // printf(BCYAN"No errors detected\n" RESET);
+        // print_tree(root, 0);
+        // search_undeclared_node(root, symbol_table, 0, &scope_stack);
         free_node(root);
     }
     fclose(yyin);    

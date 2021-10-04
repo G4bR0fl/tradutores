@@ -51,13 +51,15 @@ void free_node(tree* main_node){
     }
 }
 
-void search_undeclared_node(tree* main_node, symbol* table, int depth){
+void search_undeclared_node(tree* main_node, symbol* table, int depth, pilha* stack){
     if(main_node == NULL){
         return;
     }else{
         if(strcmp(main_node->type_name, "expression") == 0){
             int table_size = find_last_symbol(table);
             int found = 0;
+            // printf("Printing inside 'search_undeclared_node()\n");
+            // print_aux_list(list_range);  
             for(int i = 0; i < table_size - 1; i++){
                 if( ( strcmp(table[i].identifier, main_node->node1->type_name) == 0 ) && (table[i].scope == main_node->var_scope) ){
                     found++;
@@ -72,19 +74,19 @@ void search_undeclared_node(tree* main_node, symbol* table, int depth){
         }
         else{
             if(main_node->node1 && strcmp(main_node->node1->type_name, "empty") != 0){
-                search_undeclared_node(main_node->node1, table, depth+1);
+                search_undeclared_node(main_node->node1, table, depth+1, stack);
             }
             if(main_node->node2 && strcmp(main_node->node2->type_name, "empty") != 0){
-                search_undeclared_node(main_node->node2, table, depth+1);
+                search_undeclared_node(main_node->node2, table, depth+1, stack);
             }
             if(main_node->node3 && strcmp(main_node->node3->type_name, "empty") != 0){
-                search_undeclared_node(main_node->node3, table, depth+1);
+                search_undeclared_node(main_node->node3, table, depth+1, stack);
             }
             if(main_node->node4 && strcmp(main_node->node4->type_name, "empty") != 0){
-                search_undeclared_node(main_node->node4, table, depth+1);
+                search_undeclared_node(main_node->node4, table, depth+1, stack);
             }
             if(main_node->node5 && strcmp(main_node->node5->type_name, "empty") != 0){
-                search_undeclared_node(main_node->node5, table, depth+1);
+                search_undeclared_node(main_node->node5, table, depth+1, stack);
             }
         }
     }

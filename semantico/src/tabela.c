@@ -9,6 +9,7 @@
 #define RESET "\e[0m"
 
 symbol symbol_table[100000];
+// s_scopes scopes[1000];
 
 symbol add_symbol(int line, int column, char* identifier, char* type, int is_function, int scope){
     
@@ -40,7 +41,7 @@ int is_duplicated(symbol* s, char* identifier, int scope, int line, int column){
     for(int i = 0; i < latest_index; i++){
         int id_comparation = strcmp(new_id_string, s[i].identifier);
         if(id_comparation == 0 && scope == s[i].scope){
-            printf(BRED"(%d:%d) '%s' - Has already been declared on this scope -> [%d]" RESET, line, column, identifier, scope);
+            printf(BRED"(%d:%d) '%s' - Has already been declared on this scope -> [%d]\n" RESET, line, column, identifier, scope);
             return 1;
         }
     }
@@ -61,5 +62,18 @@ void print_table(int size){
         }
     } else {
         printf("TABELA VAZIA!\n");
+    }
+}
+
+void main_detection(int size){
+    int detected = 0;
+    for(int i = 0; i < size; i++){
+        if(strcmp(symbol_table[i].identifier, "main") == 0){
+            detected++;
+            break;
+        }
+    }
+    if(detected == 0){
+        printf(BRED"'Main' function not detected.\n" RESET);
     }
 }
