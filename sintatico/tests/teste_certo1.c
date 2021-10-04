@@ -1,4 +1,4 @@
-float list unique_list() {
+float list unique_list(int a) {
     float elem;
     float list new_list;
     new_list = NIL;

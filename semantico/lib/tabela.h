@@ -5,6 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+// typedef struct Scope {
+//     int current_scope;
+//     int scope_list[1000];
+// }s_scopes;
 
 typedef struct Symbol {
     int not_empty;
@@ -13,6 +17,7 @@ typedef struct Symbol {
     int is_function;
     char type[100];
     char identifier[100];
+    // s_scopes* scope;
     int scope; 
 }symbol;
 
@@ -20,6 +25,7 @@ symbol add_symbol(int line, int column, char* identifier, char* type, int is_fun
 void print_table(int size);
 int find_last_symbol(symbol* s);
 int is_duplicated(symbol* s, char* identifier, int scope, int line, int column);
-
+int get_table_size(symbol* s);
+void main_detection(int size);
 
 #endif

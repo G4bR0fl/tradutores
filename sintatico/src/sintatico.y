@@ -190,7 +190,6 @@ list_declaration:
         $$->node1 = create_node(list_string);
         $$->node2 = create_node($3.body);
     }
-    
 ;
 
 params:
@@ -207,11 +206,28 @@ params:
 
 param:
     SIMPLE_TYPE ID {
+        symbol new_symbol = add_symbol($2.line, $2.columns, $2.body, $1.body, 0, scope);
+        symbol_table[table_index] = new_symbol;
+        table_index++;
+        table_size++;
+
         $$ = create_node("param");
         $$->node1 = create_node($1.body);
         $$->node2 = create_node($2.body);
     }
     | SIMPLE_TYPE LIST_TYPE ID {
+        char str_simple_type[50];
+        char str_list_type[50];
+        char list_string[101];
+        strcpy(str_simple_type, $1.body);
+        strcat(str_simple_type, "\x20");
+        strcpy(str_list_type, $2.body);
+        strcpy(list_string, strcat(str_simple_type, str_list_type));
+        symbol new_symbol = add_symbol($3.line, $3.columns, $3.body, list_string, 0, scope);
+        symbol_table[table_index] = new_symbol;
+        table_index++;
+        table_size++;
+
         $$ = create_node("param");
         $$->node1 = create_node($1.body);
         $$->node2 = create_node($2.body);
