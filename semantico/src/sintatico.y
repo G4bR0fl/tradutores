@@ -24,7 +24,7 @@
     extern int scope;
     extern symbol symbol_table[100000];
     extern pilha scope_stack; 
-    extern int auxiliary_list[1000];
+    extern int auxiliary_list[100000];
 
     void yyerror(const char* msg);
 

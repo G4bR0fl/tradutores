@@ -20,7 +20,7 @@
     int scope = 0;
 
     extern pilha scope_stack;
-    extern int auxiliary_list[1000];
+    int auxiliary_list[100000];
 %}
 
 SIMPLE_TYPE         int|float

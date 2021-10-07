@@ -1,7 +1,6 @@
 #include "../lib/pilha.h"
 
 pilha scope_stack;
-int auxiliary_list[1000];
 
 void init_stack(pilha* p){
     p->scope_array[0] = 0;
