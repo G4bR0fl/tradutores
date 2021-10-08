@@ -76,6 +76,7 @@
 %type <node> var_declaration
 %type <node> function_declaration
 %type <node> list_declaration
+%type <node> scope_declaration
 %type <node> params_list
 %type <node> params
 %type <node> param
@@ -222,7 +223,11 @@ list_declaration:
 ;
 
 scope_declaration:
-    '{' multiple_stmt '}'
+    '{' multiple_stmt '}' {
+        $$ = create_node("scope_declaration");
+        $$->node1 = $2;
+        $$->var_scope = get_stack_top(&scope_stack);
+    }
 ;
 
 params_list: 
@@ -376,6 +381,11 @@ general_declaration:
     }
     | general_declaration stmt {
         $$ = create_node("general_declaration -> stmt");
+        $$->node1 = $1;
+        $$->node2 = $2;
+    }
+    | general_declaration scope_declaration{
+        $$ = create_node("general_declaration -> scope_declaration");
         $$->node1 = $1;
         $$->node2 = $2;
     }
