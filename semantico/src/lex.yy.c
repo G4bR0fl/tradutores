@@ -543,7 +543,7 @@ char *yytext_ptr;
     int scope = 0;
 
     extern pilha scope_stack;
-    int auxiliary_list[1000];
+    int auxiliary_list[100000];
 #line 548 "lex.yy.c"
 #line 549 "lex.yy.c"
 
