@@ -79,6 +79,9 @@ void print_table(int size){
     } else {
         printf("TABELA VAZIA!\n");
     }
+    // for(i = 0; i < size; i++){
+    //     printf("ArgType: %s\nArgName %s\n", symbol_table[i].param.argument_name[i], symbol_table[i].param.argument_type[i]);
+    // }
 }
 
 void main_detection(int size){

@@ -14,6 +14,8 @@ struct Tree {
     struct Tree* node4;
     struct Tree* node5;
     int var_scope;
+    int column;
+    int line;
 };
 
 tree* create_node(char* type_name);

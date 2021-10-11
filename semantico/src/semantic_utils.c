@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define BRED "\e[0;31m"
+#define BMAG "\e[1;35m"
+#define RESET "\e[0m"
 
 tree* search_node(tree* node, char* node_name){
     tree* aux_node = NULL;
@@ -51,15 +54,19 @@ int function_param_amount(tree* node, symbol* s, int depth, int* pointer){
         if(found_symbol.not_empty == 1){
             // function_param_amount(node->node1, s, depth+1);
             function_param_amount(node->node2, &found_symbol, depth+1, pointer);
+            if(found_symbol.function_params != *pointer){
+                printf(BRED"(%d:%d) Semantic error: %s expected %d arguments but received %d.\n" RESET, node->line, node->column, found_symbol.identifier, found_symbol.function_params, *pointer);
+            } // Botar linha e coluna nesse erro e na árvore.
+            *pointer = 0;
             // function_param_amount(node->node3, s, depth+1);
             // function_param_amount(node->node4, s, depth+1);
             // function_param_amount(node->node5, s, depth+1);
-        }    
+        } else printf("Symbol not found!");
     }else{
         if((strcmp(node->type_name, "arguments") == 0) && (strcmp(node->node1->type_name, "arguments") != 0)){
             return ++*pointer;
         }else{
-            function_param_amount(node->node1, s, depth+1, pointer);
+            function_param_amount(node->node1, s, depth+1, pointer);    
         }
         if((strcmp(node->type_name, "arguments") == 0) && (strcmp(node->node2->type_name, "arguments") != 0)){
             return ++*pointer;
@@ -82,10 +89,7 @@ int function_param_amount(tree* node, symbol* s, int depth, int* pointer){
             function_param_amount(node->node5, s, depth+1, pointer);
         }
     }
-    if(strcmp(node->type_name, "factor_arguments") == 0 ){
-        *pointer = *pointer + 1;
-        // *pointer = 0;
-    }
+
     return *pointer;
 }
 

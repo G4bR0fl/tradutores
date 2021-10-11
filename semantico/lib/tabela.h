@@ -12,7 +12,6 @@
 
 typedef struct FunctionParams {
     char argument_type[100];
-    char argument_name[100];
 }params;
 
 typedef struct Symbol {
@@ -24,7 +23,7 @@ typedef struct Symbol {
     char identifier[100];
     int function_params;
     int scope; 
-    params param;
+    params* param;
 }symbol;
 
 symbol add_symbol(int line, int column, char* identifier, char* type, int is_function, int scope);

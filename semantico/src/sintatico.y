@@ -153,6 +153,8 @@ var_declaration:
         $$->node1 = create_node($1.body);
         $$->node2 = create_node($2.body);
         $$->var_scope = get_stack_top(&scope_stack);
+        $$->line = $2.line;
+        $$->column = $2.columns;
     }
 ;
 
@@ -163,7 +165,11 @@ function_declaration:
         if(create == 0){
             symbol new_symbol = add_symbol($2.line, $2.columns, $2.body, $1.body, 1, get_stack_top(&scope_stack));
             new_symbol.function_params = param_counter;
+            new_symbol.param = param;
             symbol_table[table_index] = new_symbol;
+            // for(int idx = 0; idx < param_counter; idx++){
+            //     printf("ParamType: %s\n", new_symbol.param[idx].argument_type);
+            // }
             table_index++;
             table_size++;   
             param_counter = 0;
@@ -174,6 +180,8 @@ function_declaration:
         $$->node3 = $4;
         $$->node4 = $7;
         $$->var_scope = get_stack_top(&scope_stack);
+        $$->line = $2.line;
+        $$->column = $2.columns;
     }
     | SIMPLE_TYPE LIST_TYPE ID '(' params_list ')' '{' multiple_stmt '}' {
         char str_simple_type[50];
@@ -188,6 +196,7 @@ function_declaration:
             strcpy(list_string, strcat(str_simple_type, str_list_type));
             symbol new_symbol = add_symbol($3.line, $3.columns, $3.body, list_string, 1, get_stack_top(&scope_stack));
             new_symbol.function_params = param_counter;
+            new_symbol.param = param;
             symbol_table[table_index] = new_symbol;
             table_index++;
             table_size++;
@@ -200,6 +209,8 @@ function_declaration:
         $$->node3 = $5;
         $$->node4 = $8;
         $$->var_scope = get_stack_top(&scope_stack);
+        $$->line = $3.line;
+        $$->column = $3.columns;
     }
 ;
 
@@ -225,6 +236,8 @@ list_declaration:
         $$->node1 = create_node(list_string);
         $$->node2 = create_node($3.body);
         $$->var_scope = get_stack_top(&scope_stack);
+        $$->line = $3.line;
+        $$->column = $3.columns;
     }   
 ;
 
@@ -262,7 +275,6 @@ param:
         create = is_duplicated(symbol_table, $2.body, get_stack_top(&scope_stack), $2.line, $2.columns);
         if(create == 0){    
             strcpy(param[param_counter].argument_type, $1.body);
-            strcpy(param[param_counter].argument_name, $2.body);
             param_counter++;
             symbol new_symbol = add_symbol($2.line, $2.columns, $2.body, $1.body, 0, get_stack_top(&scope_stack));
             pop(&scope_stack);
@@ -274,6 +286,8 @@ param:
         $$ = create_node("param");
         $$->node1 = create_node($1.body);
         $$->node2 = create_node($2.body);
+        $$->line = $2.line;
+        $$->column = $2.columns;
     }
     | SIMPLE_TYPE LIST_TYPE ID {
         char str_simple_type[50];
@@ -291,7 +305,6 @@ param:
             strcpy(list_string, strcat(str_simple_type, str_list_type));
             // End of concatenation
             strcpy(param[param_counter].argument_type, list_string);
-            strcpy(param[param_counter].argument_name, $3.body);
             param_counter++;
             symbol new_symbol = add_symbol($3.line, $3.columns, $3.body, list_string, 0, get_stack_top(&scope_stack));
             pop(&scope_stack);
@@ -304,6 +317,8 @@ param:
         $$ = create_node("param");
         $$->node1 = create_node(list_string);
         $$->node2 = create_node($3.body);
+        $$->line = $3.line;
+        $$->column = $3.columns;
     }
 ;
 
@@ -315,6 +330,8 @@ if_else_stmt:
         $$->node3 = $6;
         $$->node4 = create_node($8.body);
         $$->node5 = $10;
+        $$->line = $1.line;
+        $$->column = $1.columns;
     }
     | IF '(' expression ')' '{' multiple_stmt '}' ELSE stmt {
         $$ = create_node("if_else_stmt");
@@ -323,6 +340,8 @@ if_else_stmt:
         $$->node3 = $6;
         $$->node4 = create_node($8.body);
         $$->node5 = $9;
+        $$->line = $1.line;
+        $$->column = $1.columns;
     }
     | IF '(' expression ')' stmt ELSE '{' multiple_stmt '}' {
         $$ = create_node("if_else_stmt");
@@ -331,6 +350,8 @@ if_else_stmt:
         $$->node3 = $5;
         $$->node4 = create_node($6.body);
         $$->node5 = $8;
+        $$->line = $1.line;
+        $$->column = $1.columns;
     }
     | IF '(' expression ')' stmt ELSE stmt { 
         $$ = create_node("if_else_stmt");
@@ -339,18 +360,24 @@ if_else_stmt:
         $$->node3 = $5;
         $$->node4 = create_node($6.body);
         $$->node5 = $7;
+        $$->line = $1.line;
+        $$->column = $1.columns;
     }
     | IF '(' expression ')' '{' multiple_stmt '}' {
         $$ = create_node("if_else_stmt");
         $$->node1 = create_node($1.body);
         $$->node2 = $3;
         $$->node3 = $6;
+        $$->line = $1.line;
+        $$->column = $1.columns;
     }
     | IF '(' expression ')' stmt {
         $$ = create_node("if_else_stmt");
         $$->node1 = create_node($1.body);
         $$->node2 = $3;
-        $$->node3 = $5;    
+        $$->node3 = $5;
+        $$->line = $1.line;
+        $$->column = $1.columns;    
     }
 ;
 
@@ -362,6 +389,8 @@ for_stmt:
         $$->node3 = $5;
         $$->node4 = $7;
         $$->node5 = $10;
+        $$->line = $1.line;
+        $$->column = $1.columns;
     }
     | FOR '(' for_variation_null_expressions ';' for_variation_null_expressions ';' for_variation_null_expressions ')' stmt {
         $$ = create_node("for_stmt");
@@ -370,6 +399,8 @@ for_stmt:
         $$->node3 = $5;
         $$->node4 = $7;
         $$->node5 = $9;
+        $$->line = $1.line;
+        $$->column = $1.columns;
     }
 ;
 
@@ -378,6 +409,8 @@ return_stmt:
     | RETURN expression ';' {
         $$ = create_node($1.body);
         $$->node1 = $2;
+        $$->line = $1.line;
+        $$->column = $1.columns;
     }
 ;
 
@@ -436,11 +469,15 @@ print:
         $$ = create_node("print");
         $$->node1 = create_node($1.body);
         $$->node2 = create_node($3.body);
+        $$->line = $1.line;
+        $$->column = $1.columns;
     }
     | OUTPUT '(' expression ')' ';' {
         $$ = create_node("print");
         $$->node1 = create_node($1.body);
         $$->node2 = $3;
+        $$->line = $1.line;
+        $$->column = $1.columns;
     }
 ;
 
@@ -449,6 +486,8 @@ scan:
         $$ = create_node("scan");
         $$->node1 = create_node($1.body);
         $$->node2 = create_node($3.body);
+        $$->line = $1.line;
+        $$->column = $1.columns;
     }
 ;
 
@@ -459,6 +498,8 @@ expression:
         $$->node2 = create_node($2.body);
         $$->node3 = $3;
         $$->var_scope = get_stack_top(&scope_stack);
+        $$->line = $1.line;
+        $$->column = $1.columns;
     } 
     | simple_expression {$$ = $1;}
     | error {yyerrok;}
@@ -473,6 +514,8 @@ simple_expression:
         $$->node2 = create_node($2.body);
         $$->node3 = $3;
         $$->var_scope = get_stack_top(&scope_stack);
+        $$->line = $2.line;
+        $$->column = $2.columns;
     }
 ;   
 
@@ -484,6 +527,8 @@ list_operation:
         $$->node2 = create_node($2.body);
         $$->node3 = $3;     
         $$->var_scope = get_stack_top(&scope_stack);
+        $$->line = $2.line;
+        $$->column = $2.columns;
     }
     | relational_expression FILTER list_operation {
         $$ = create_node("list_operation");
@@ -491,6 +536,8 @@ list_operation:
         $$->node2 = create_node($2.body);
         $$->node3 = $3;
         $$->var_scope = get_stack_top(&scope_stack);
+        $$->line = $2.line;
+        $$->column = $2.columns;
     }
     | relational_expression BINARY_CONSTRUCTOR list_operation {
         $$ = create_node("binary_constructor_recursive");
@@ -498,6 +545,8 @@ list_operation:
         $$->node2 = create_node($2.body);
         $$->node3 = $3;
         $$->var_scope = get_stack_top(&scope_stack);
+        $$->line = $2.line;
+        $$->column = $2.columns;
     }
     | relational_expression {$$ = $1;}
 ;
@@ -510,6 +559,8 @@ relational_expression:
         $$->node2 = create_node($2.body);
         $$->node3 = $3;
         $$->var_scope = get_stack_top(&scope_stack);
+        $$->line = $2.line;
+        $$->column = $2.columns;
     }
     | arithmetic_expression {$$ = $1;}
 ;
@@ -521,6 +572,8 @@ arithmetic_expression:
         $$->node2 = create_node($2.body);
         $$->node3 = $3;
         $$->var_scope = get_stack_top(&scope_stack);
+        $$->line = $2.line;
+        $$->column = $2.columns;
     } 
     | term {$$ = $1;}
 ;
@@ -532,6 +585,8 @@ term:
         $$->node2 = create_node($2.body);
         $$->node3 = $3;
         $$->var_scope = get_stack_top(&scope_stack);
+        $$->line = $2.line;
+        $$->column = $2.columns;
     }
     | factor {$$ = $1;}
 ;
@@ -541,16 +596,32 @@ factor:
     | ID {
         $$ = create_node($1.body);
         $$->var_scope = get_stack_top(&scope_stack);
+        $$->line = $1.line;
+        $$->column = $1.columns;
     }
-    | INT {$$ = create_node($1.body);}
-    | FLOAT {$$ = create_node($1.body);}
+    | INT {
+        $$ = create_node($1.body);
+        $$->line = $1.line;
+        $$->column = $1.columns;
+    }
+    | FLOAT {
+        $$ = create_node($1.body);
+        $$->line = $1.line;
+        $$->column = $1.columns;
+    }
     | ID '(' arguments ')' {
         $$ = create_node("factor_arguments");
         $$->node1 = create_node($1.body);
         $$->node2 = $3;
         $$->var_scope = get_stack_top(&scope_stack);
+        $$->line = $1.line;
+        $$->column = $1.columns;
     } 
-    | LIST_CONSTANT {$$ = create_node($1.body);}
+    | LIST_CONSTANT {
+        $$ = create_node($1.body);
+        $$->line = $1.line;
+        $$->column = $1.columns;
+    }
     | unary_factor {$$ = $1;}
 ;
 
@@ -578,16 +649,22 @@ unary_factor:
         $$ = create_node("unary_factor");
         $$->node1 = create_node($1.body);
         $$->node2 = $2;
+        $$->line = $1.line;
+        $$->column = $1.columns;
     }
     | TAIL factor{
         $$ = create_node("unary_factor");
         $$->node1 = create_node($1.body);
         $$->node2 = $2;
+        $$->line = $1.line;
+        $$->column = $1.columns;
     } 
     | HEADER factor{
         $$ = create_node("unary_factor");
         $$->node1 = create_node($1.body);
         $$->node2 = $2;
+        $$->line = $1.line;
+        $$->column = $1.columns;
     } 
 ;
 
@@ -616,14 +693,15 @@ int main(int argc, char ** argv) {
     else {
         printf("No input given.\n");
     }
-    tree* generic = NULL;
-    for(main_idx = 0; main_idx < table_size; main_idx++){
-        if(symbol_table[main_idx].is_function == 1){
-            generic = search_node(root, symbol_table[main_idx].identifier);
-            printf("%p\n", generic);
-            printf("Params for %s: %d\n", symbol_table[main_idx].identifier, function_param_amount(root, symbol_table, 0, &tree_pointer));
-        }
-    }
+    // tree* generic = NULL;
+    // generic = search_node(root, symbol_table[main_idx].identifier);
+    // printf("%p\n", generic);
+    function_param_amount(root, symbol_table, 0, &tree_pointer);
+    // for(main_idx = 0; main_idx < table_size; main_idx++){
+    //     if(symbol_table[main_idx].is_function == 1){
+    //         printf("Params for %s: %d\n", symbol_table[main_idx].identifier, function_param_amount(root, symbol_table, 0, &tree_pointer));
+    //     }
+    // }
     main_detection(table_size);
     print_table(table_size);
     if(errors == 0){
