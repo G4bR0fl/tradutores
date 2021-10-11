@@ -9,6 +9,7 @@
 #define RESET "\e[0m"
 
 symbol symbol_table[100000];
+params param[100000];
 // s_scopes scopes[1000];
 
 symbol add_symbol(int line, int column, char* identifier, char* type, int is_function, int scope){
@@ -21,8 +22,23 @@ symbol add_symbol(int line, int column, char* identifier, char* type, int is_fun
     strcpy(new_symbol.type, type);
     new_symbol.is_function = is_function;
     new_symbol.scope = scope;
-
     return new_symbol;
+}
+
+symbol find_symbol(symbol* s, char* identifier){
+    symbol found_symbol;
+    int i;
+    int last_idx = find_last_symbol(s);
+    for(i = 0; i < last_idx; i++){
+        if(strcmp(s[i].identifier, identifier) == 0){
+            found_symbol = s[i];
+            break;
+        }
+    }
+    if(s[i].not_empty == 0){
+        found_symbol = s[i];
+    }
+    return found_symbol;
 }
 
 int find_last_symbol(symbol* s){

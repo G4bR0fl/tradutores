@@ -7,7 +7,7 @@
     #include "../lib/tabela.h"
     #include "../lib/arvore.h"
     #include "../lib/pilha.h"
-
+    #include "../lib/semantic_utils.h"
 
     #define BRED "\e[0;31m"
     #define BMAG "\e[1;35m"
@@ -24,14 +24,17 @@
     extern int scope;
     extern symbol symbol_table[100000];
     extern pilha scope_stack; 
-    extern int auxiliary_list[100000];
+    extern params param[100000];
+    extern int auxiliary_list[100000]; // No clue what this is doing atm, but if taken out it breaks the code.
 
     void yyerror(const char* msg);
 
-    int last_element = 0;
-    int table_index = 0;
-    int table_size = 0;
-    tree* root;
+    int main_idx = 0; // used on loops inside main(), at the end of the file;
+    int tree_pointer = 0;
+    int param_counter = 0; // counts specific function argument;
+    int table_index = 0; // Indexes symbol_table;
+    int table_size = 0; // Adds up by +1 when a new symbol is added on the symbol_table;
+    tree* root; // First tree node(only reachable when the tree complete);
     
 %}  
 
@@ -159,11 +162,12 @@ function_declaration:
         create = is_duplicated(symbol_table, $2.body, get_stack_top(&scope_stack), $2.line, $2.columns);
         if(create == 0){
             symbol new_symbol = add_symbol($2.line, $2.columns, $2.body, $1.body, 1, get_stack_top(&scope_stack));
+            new_symbol.function_params = param_counter;
             symbol_table[table_index] = new_symbol;
             table_index++;
             table_size++;   
+            param_counter = 0;
         }
-
         $$ = create_node("function_declaration");
         $$->node1 = create_node($1.body);
         $$->node2 = create_node($2.body);
@@ -183,9 +187,11 @@ function_declaration:
             strcpy(str_list_type, $2.body);
             strcpy(list_string, strcat(str_simple_type, str_list_type));
             symbol new_symbol = add_symbol($3.line, $3.columns, $3.body, list_string, 1, get_stack_top(&scope_stack));
+            new_symbol.function_params = param_counter;
             symbol_table[table_index] = new_symbol;
             table_index++;
             table_size++;
+            param_counter = 0;
         }
         
         $$ = create_node("function_declaration");
@@ -255,6 +261,9 @@ param:
         push(&scope_stack, scope, auxiliary_list);
         create = is_duplicated(symbol_table, $2.body, get_stack_top(&scope_stack), $2.line, $2.columns);
         if(create == 0){    
+            strcpy(param[param_counter].argument_type, $1.body);
+            strcpy(param[param_counter].argument_name, $2.body);
+            param_counter++;
             symbol new_symbol = add_symbol($2.line, $2.columns, $2.body, $1.body, 0, get_stack_top(&scope_stack));
             pop(&scope_stack);
             scope--;
@@ -275,10 +284,15 @@ param:
         push(&scope_stack, scope, auxiliary_list);
         create = is_duplicated(symbol_table, $3.body, get_stack_top(&scope_stack), $3.line, $3.columns);
         if(create == 0){
+            // Concatenating SIMPLE_TYPE + LIST_TYPE
             strcpy(str_simple_type, $1.body);
             strcat(str_simple_type, "\x20");
             strcpy(str_list_type, $2.body);
             strcpy(list_string, strcat(str_simple_type, str_list_type));
+            // End of concatenation
+            strcpy(param[param_counter].argument_type, list_string);
+            strcpy(param[param_counter].argument_name, $3.body);
+            param_counter++;
             symbol new_symbol = add_symbol($3.line, $3.columns, $3.body, list_string, 0, get_stack_top(&scope_stack));
             pop(&scope_stack);
             scope--;
@@ -288,9 +302,8 @@ param:
         }
 
         $$ = create_node("param");
-        $$->node1 = create_node($1.body);
-        $$->node2 = create_node($2.body);
-        $$->node3 = create_node($3.body);
+        $$->node1 = create_node(list_string);
+        $$->node2 = create_node($3.body);
     }
 ;
 
@@ -370,22 +383,22 @@ return_stmt:
 
 general_declaration:
     general_declaration var_declaration {
-        $$ = create_node("general_declaration -> var_declaration");
+        $$ = create_node("general_declaration");
         $$->node1 = $1;
         $$->node2 = $2;
     }
     | general_declaration list_declaration {
-        $$ = create_node("general_declaration -> list_declaration");
+        $$ = create_node("general_declaration");
         $$->node1 = $1;
         $$->node2 = $2;
     }
     | general_declaration stmt {
-        $$ = create_node("general_declaration -> stmt");
+        $$ = create_node("general_declaration");
         $$->node1 = $1;
         $$->node2 = $2;
     }
     | general_declaration scope_declaration{
-        $$ = create_node("general_declaration -> scope_declaration");
+        $$ = create_node("general_declaration");
         $$->node1 = $1;
         $$->node2 = $2;
     }
@@ -532,7 +545,7 @@ factor:
     | INT {$$ = create_node($1.body);}
     | FLOAT {$$ = create_node($1.body);}
     | ID '(' arguments ')' {
-        $$ = create_node("factor");
+        $$ = create_node("factor_arguments");
         $$->node1 = create_node($1.body);
         $$->node2 = $3;
         $$->var_scope = get_stack_top(&scope_stack);
@@ -545,9 +558,12 @@ arguments:
     arguments_list ',' expression {
         $$ = create_node("arguments");
         $$->node1 = $1;
-        $$->node2 = $3;
+        $$->node2 = $3; 
     } 
-    | expression {$$ = $1;}
+    | expression {
+        $$ = create_node("arguments");
+        $$->node1 = $1;
+    }
 ;
 
 arguments_list: 
@@ -599,6 +615,14 @@ int main(int argc, char ** argv) {
     }
     else {
         printf("No input given.\n");
+    }
+    tree* generic = NULL;
+    for(main_idx = 0; main_idx < table_size; main_idx++){
+        if(symbol_table[main_idx].is_function == 1){
+            generic = search_node(root, symbol_table[main_idx].identifier);
+            printf("%p\n", generic);
+            printf("Params for %s: %d\n", symbol_table[main_idx].identifier, function_param_amount(root, symbol_table, 0, &tree_pointer));
+        }
     }
     main_detection(table_size);
     print_table(table_size);

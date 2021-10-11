@@ -16,6 +16,7 @@ void push(pilha* p, int scope_id, int* list){
     return;
 }
 
+
 int pop(pilha* p){
     int element;
     element = p->scope_array[p->last_element]; 
