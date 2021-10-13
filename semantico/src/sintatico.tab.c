@@ -587,8 +587,8 @@ static const yytype_int16 yyrline[] =
      436,   445,   450,   455,   460,   465,   471,   475,   479,   480,
      484,   485,   486,   487,   488,   489,   490,   495,   502,   513,
      530,   545,   546,   551,   552,   565,   574,   583,   592,   597,
-     606,   610,   621,   625,   636,   640,   641,   650,   657,   664,
-     675,   682,   686,   691,   698,   699,   705,   713,   721
+     606,   610,   621,   625,   636,   640,   641,   649,   656,   663,
+     674,   681,   685,   690,   697,   698,   704,   712,   720
 };
 #endif
 
@@ -2258,8 +2258,8 @@ yyreduce:
         (yyval.node)->node2->column = (yyvsp[-1].token).columns;
         (yyval.node)->node2->var_scope = get_stack_top(&scope_stack); 
 
-        // strcpy($$->node2->type, $1.body);
-        assign_types((yyval.node)->node2, symbol_table, &scope_stack);
+        strcpy((yyval.node)->node2->type, (yyvsp[-2].token).body);
+        // assign_types($$->node2, symbol_table, &scope_stack); -> not working when the same variable is redeclared in another scope
     }
 #line 2265 "src/sintatico.tab.c"
     break;
@@ -2288,8 +2288,8 @@ yyreduce:
         (yyval.node)->node2->line = (yyvsp[-6].token).line;
         (yyval.node)->node2->column = (yyvsp[-6].token).columns;
         (yyval.node)->node2->var_scope = get_stack_top(&scope_stack);
-        // strcpy($$->node2->type, $1.body);
-        assign_types((yyval.node)->node2, symbol_table, &scope_stack);
+        strcpy((yyval.node)->node2->type, (yyvsp[-7].token).body);
+        // assign_types($$->node2, symbol_table, &scope_stack);
     }
 #line 2295 "src/sintatico.tab.c"
     break;
@@ -2327,8 +2327,8 @@ yyreduce:
         (yyval.node)->node2->column = (yyvsp[-6].token).columns;
         (yyval.node)->node2->var_scope = get_stack_top(&scope_stack);
 
-        // strcpy($$->node2->type, list_string);
-        assign_types((yyval.node)->node2, symbol_table, &scope_stack);
+        strcpy((yyval.node)->node2->type, list_string);
+        // assign_types($$->node2, symbol_table, &scope_stack);
     }
 #line 2334 "src/sintatico.tab.c"
     break;
@@ -2361,7 +2361,7 @@ yyreduce:
         (yyval.node)->node2->var_scope = get_stack_top(&scope_stack);
         
         strcpy((yyval.node)->node2->type, list_string);
-        assign_types((yyval.node)->node2, symbol_table ,&scope_stack);
+        // assign_types($$->node2, symbol_table ,&scope_stack);
     }
 #line 2367 "src/sintatico.tab.c"
     break;
@@ -2954,15 +2954,14 @@ yyreduce:
         (yyval.node)->var_scope = get_stack_top(&scope_stack);
         (yyval.node)->line = (yyvsp[0].token).line;
         (yyval.node)->column = (yyvsp[0].token).columns;
-        printf("Current id: %s(%d)\n", (yyval.node)->type_name, (yyval.node)->var_scope);
         search_undeclared_node((yyval.node), symbol_table, &scope_stack);
         assign_types((yyval.node), symbol_table, &scope_stack);
     }
-#line 2962 "src/sintatico.tab.c"
+#line 2961 "src/sintatico.tab.c"
     break;
 
   case 67: /* factor: INT  */
-#line 650 "src/sintatico.y"
+#line 649 "src/sintatico.y"
           {
         (yyval.node) = create_node((yyvsp[0].token).body);
         (yyval.node)->line = (yyvsp[0].token).line;
@@ -2970,11 +2969,11 @@ yyreduce:
         (yyval.node)->var_scope = get_stack_top(&scope_stack);
         strcpy((yyval.node)->type, "int"); 
     }
-#line 2974 "src/sintatico.tab.c"
+#line 2973 "src/sintatico.tab.c"
     break;
 
   case 68: /* factor: FLOAT  */
-#line 657 "src/sintatico.y"
+#line 656 "src/sintatico.y"
             {
         (yyval.node) = create_node((yyvsp[0].token).body);
         (yyval.node)->line = (yyvsp[0].token).line;
@@ -2982,11 +2981,11 @@ yyreduce:
         (yyval.node)->var_scope = get_stack_top(&scope_stack);
         strcpy((yyval.node)->type, "float");
     }
-#line 2986 "src/sintatico.tab.c"
+#line 2985 "src/sintatico.tab.c"
     break;
 
   case 69: /* factor: ID '(' arguments ')'  */
-#line 664 "src/sintatico.y"
+#line 663 "src/sintatico.y"
                            {
         (yyval.node) = create_node("factor_arguments");
         (yyval.node)->node1 = create_node((yyvsp[-3].token).body);
@@ -2998,11 +2997,11 @@ yyreduce:
         search_undeclared_node((yyval.node)->node1, symbol_table, &scope_stack);
         assign_types((yyval.node)->node1, symbol_table, &scope_stack);
     }
-#line 3002 "src/sintatico.tab.c"
+#line 3001 "src/sintatico.tab.c"
     break;
 
   case 70: /* factor: LIST_CONSTANT  */
-#line 675 "src/sintatico.y"
+#line 674 "src/sintatico.y"
                     {
         (yyval.node) = create_node((yyvsp[0].token).body);
         (yyval.node)->line = (yyvsp[0].token).line;
@@ -3010,50 +3009,50 @@ yyreduce:
         (yyval.node)->var_scope = get_stack_top(&scope_stack);
         strcpy((yyval.node)->type, "NIL");
     }
-#line 3014 "src/sintatico.tab.c"
+#line 3013 "src/sintatico.tab.c"
     break;
 
   case 71: /* factor: unary_factor  */
-#line 682 "src/sintatico.y"
+#line 681 "src/sintatico.y"
                    {(yyval.node) = (yyvsp[0].node);}
-#line 3020 "src/sintatico.tab.c"
+#line 3019 "src/sintatico.tab.c"
     break;
 
   case 72: /* arguments: arguments_list ',' expression  */
-#line 686 "src/sintatico.y"
+#line 685 "src/sintatico.y"
                                   {
         (yyval.node) = create_node("arguments");
         (yyval.node)->node1 = (yyvsp[-2].node);
         (yyval.node)->node2 = (yyvsp[0].node); 
     }
-#line 3030 "src/sintatico.tab.c"
+#line 3029 "src/sintatico.tab.c"
     break;
 
   case 73: /* arguments: expression  */
-#line 691 "src/sintatico.y"
+#line 690 "src/sintatico.y"
                  {
         (yyval.node) = create_node("arguments");
         (yyval.node)->node1 = (yyvsp[0].node);
     }
-#line 3039 "src/sintatico.tab.c"
+#line 3038 "src/sintatico.tab.c"
     break;
 
   case 74: /* arguments_list: arguments  */
-#line 698 "src/sintatico.y"
+#line 697 "src/sintatico.y"
               {(yyval.node) = (yyvsp[0].node);}
-#line 3045 "src/sintatico.tab.c"
+#line 3044 "src/sintatico.tab.c"
     break;
 
   case 75: /* arguments_list: %empty  */
-#line 699 "src/sintatico.y"
+#line 698 "src/sintatico.y"
              {
         (yyval.node) = create_node("empty");
     }
-#line 3053 "src/sintatico.tab.c"
+#line 3052 "src/sintatico.tab.c"
     break;
 
   case 76: /* unary_factor: BINARY_BASIC_OP1 factor  */
-#line 705 "src/sintatico.y"
+#line 704 "src/sintatico.y"
                             {
         (yyval.node) = create_node("unary_factor");
         (yyval.node)->node1 = create_node((yyvsp[-1].token).body);
@@ -3062,11 +3061,11 @@ yyreduce:
         (yyval.node)->line = (yyvsp[-1].token).line;
         (yyval.node)->column = (yyvsp[-1].token).columns;
     }
-#line 3066 "src/sintatico.tab.c"
+#line 3065 "src/sintatico.tab.c"
     break;
 
   case 77: /* unary_factor: TAIL factor  */
-#line 713 "src/sintatico.y"
+#line 712 "src/sintatico.y"
                  {
         (yyval.node) = create_node("unary_factor");
         (yyval.node)->node1 = create_node((yyvsp[-1].token).body);
@@ -3075,11 +3074,11 @@ yyreduce:
         (yyval.node)->line = (yyvsp[-1].token).line;
         (yyval.node)->column = (yyvsp[-1].token).columns;
     }
-#line 3079 "src/sintatico.tab.c"
+#line 3078 "src/sintatico.tab.c"
     break;
 
   case 78: /* unary_factor: HEADER factor  */
-#line 721 "src/sintatico.y"
+#line 720 "src/sintatico.y"
                    {
         (yyval.node) = create_node("unary_factor");
         (yyval.node)->node1 = create_node((yyvsp[-1].token).body);
@@ -3088,11 +3087,11 @@ yyreduce:
         (yyval.node)->line = (yyvsp[-1].token).line;
         (yyval.node)->column = (yyvsp[-1].token).columns;
     }
-#line 3092 "src/sintatico.tab.c"
+#line 3091 "src/sintatico.tab.c"
     break;
 
 
-#line 3096 "src/sintatico.tab.c"
+#line 3095 "src/sintatico.tab.c"
 
       default: break;
     }
@@ -3317,7 +3316,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 731 "src/sintatico.y"
+#line 730 "src/sintatico.y"
 
 
 void yyerror(const char* msg){

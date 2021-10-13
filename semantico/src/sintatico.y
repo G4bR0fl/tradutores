@@ -159,8 +159,8 @@ var_declaration:
         $$->node2->column = $2.columns;
         $$->node2->var_scope = get_stack_top(&scope_stack); 
 
-        // strcpy($$->node2->type, $1.body);
-        assign_types($$->node2, symbol_table, &scope_stack);
+        strcpy($$->node2->type, $1.body);
+        // assign_types($$->node2, symbol_table, &scope_stack); -> not working when the same variable is redeclared in another scope
     }
 ;
 
@@ -187,8 +187,8 @@ function_declaration:
         $$->node2->line = $2.line;
         $$->node2->column = $2.columns;
         $$->node2->var_scope = get_stack_top(&scope_stack);
-        // strcpy($$->node2->type, $1.body);
-        assign_types($$->node2, symbol_table, &scope_stack);
+        strcpy($$->node2->type, $1.body);
+        // assign_types($$->node2, symbol_table, &scope_stack);
     }
     | SIMPLE_TYPE LIST_TYPE ID '(' params_list ')' '{' multiple_stmt '}' {
         char str_simple_type[50];
@@ -221,8 +221,8 @@ function_declaration:
         $$->node2->column = $3.columns;
         $$->node2->var_scope = get_stack_top(&scope_stack);
 
-        // strcpy($$->node2->type, list_string);
-        assign_types($$->node2, symbol_table, &scope_stack);
+        strcpy($$->node2->type, list_string);
+        // assign_types($$->node2, symbol_table, &scope_stack);
     }
 ;
 
@@ -253,7 +253,7 @@ list_declaration:
         $$->node2->var_scope = get_stack_top(&scope_stack);
         
         strcpy($$->node2->type, list_string);
-        assign_types($$->node2, symbol_table ,&scope_stack);
+        // assign_types($$->node2, symbol_table ,&scope_stack);
     }   
 ;
 
@@ -261,7 +261,6 @@ scope_declaration:
     '{' multiple_stmt '}' {
         $$ = create_node("scope_declaration");
         $$->node1 = $2;
-        // printf("Scope on scope_declaration: %d\n", get_stack_top(&scope_stack));
         $$->var_scope = get_stack_top(&scope_stack);
     }
 ;
@@ -643,7 +642,6 @@ factor:
         $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $1.line;
         $$->column = $1.columns;
-        printf("Current id: %s(%d)\n", $$->type_name, $$->var_scope);
         search_undeclared_node($$, symbol_table, &scope_stack);
         assign_types($$, symbol_table, &scope_stack);
     }

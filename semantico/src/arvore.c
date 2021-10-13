@@ -84,25 +84,27 @@ void search_undeclared_node(tree* main_node, symbol* table, pilha* stack){
 void assign_types(tree* node, symbol* table, pilha* stack){
     int table_size = find_last_symbol(table);
     int stack_size = get_stack_size(stack);
-    printf(BCYAN"Current node: %s - %d\n"RESET, node->type_name, node->var_scope);
+    // printf(BCYAN"Current node: %s - %d\n"RESET, node->type_name, node->var_scope);
     int found_scope = 0;
     for(int i = 0; i < stack_size; i++){
         if(node->var_scope == stack->scope_array[i]) found_scope++;
     }
     for(int i = 0; i <= table_size; i++){
-        if(strcmp(table[i].identifier, node->type_name) == 0){
-            printf("(%d:%d)Current table entry: %s\n",table[i].line, table[i].column, table[i].identifier);
-        }
+        // if(strcmp(table[i].identifier, node->type_name) == 0){
+        //     printf("(%d:%d)Current table entry: %s\n",table[i].line, table[i].column, table[i].identifier);
+        // }
         /* 
         * To enter this condition, either the ID from table has the same scope from the current node
         * or if it's a param, that means the var->scope is 0
         */
-        if((strcmp(table[i].identifier, node->type_name) == 0 && (found_scope > 0))
+        if((strcmp(table[i].identifier, node->type_name) == 0 && (found_scope > 0)) // && (table[i].scope == node->var_scope)
         || node->var_scope == 0){
             for(int j = 0; j < stack_size; j++){
-                printf(BMAG"Scope being analyzed inside array: %d\n"RESET, stack->scope_array[j]);
-                if(stack->scope_array[j] == node->var_scope){
+                // printf(BMAG"Scope being analyzed inside array: %d\n"RESET, stack->scope_array[j]);
+                // printf("Current var scope: %d\n", node->var_scope);
+                if(stack->scope_array[j] == node->var_scope ){
                     strcpy(node->type, table[i].type);
+                    // printf("\n");
                     return;
                 }
             }
