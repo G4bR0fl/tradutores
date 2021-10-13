@@ -16,6 +16,7 @@ struct Tree {
     int var_scope;
     int column;
     int line;
+    int is_function;
     char type[100];
 };
 

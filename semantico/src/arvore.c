@@ -79,12 +79,16 @@ void search_undeclared_node(tree* main_node, symbol* table, pilha* stack){
     }
 }   
 
-// Assign types on specific tree nodes
+// Assign types on specific tree nodes - still not working with var_decl
 void assign_types(tree* node, symbol* table, pilha* stack){
     int table_size = find_last_symbol(table);
     int stack_size = get_stack_size(stack);
     for(int i = 0; i <= table_size; i++){
-        if(strcmp(table[i].identifier, node->type_name) == 0){
+        /* 
+        * To enter this condition, either the ID from table has the same scope from the current node
+        * or if it's a param, that means the var->scope is 0.
+        */
+        if((strcmp(table[i].identifier, node->type_name) == 0 && (node->var_scope == table[i].scope)) || node->var_scope == 0){
             for(int j = 0; j < stack_size; j++){
                 if(stack->scope_array[j] == node->var_scope){
                     strcpy(node->type, table[i].type);

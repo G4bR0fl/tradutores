@@ -98,6 +98,18 @@ int type_comparer(tree* left_arg, tree* right_arg){
     } else return DIFF_TYPE;
 }
 
+int input_output_comparer(tree* arg){
+    if(strcmp(arg->type, "int") == 0 || strcmp(arg->type, "float") == 0){
+        return SAME_TYPE;
+    } else return DIFF_TYPE;
+}
+
+int assignment_comparer(tree* left_arg, tree* right_arg){
+    if(left_arg->is_function == 0 && (strcmp(left_arg->type, right_arg->type) == 0)){
+        return SAME_TYPE;
+    } else return DIFF_TYPE;
+}
+
 void create_cast_node_left(tree* left_arg, tree* father_node, tree* right_arg, char* node_name){
     tree* new_node = create_node(node_name);
     new_node->node1 = left_arg;
@@ -112,6 +124,7 @@ void cast_node_right(tree* left_arg, tree* father_node, tree* right_arg, char* n
     strcpy(new_node->type, left_arg->type);
 }
 
+// + and - operations 
 void evaluate_arithmetic(tree* left_arg, tree* father_node, tree* right_arg){
     if(type_comparer(left_arg, right_arg) == SAME_TYPE){
         strcpy(father_node->type, left_arg->type);
@@ -168,6 +181,7 @@ void evaluate_arithmetic(tree* left_arg, tree* father_node, tree* right_arg){
     }
 }
 
+// * and / operations
 void evaluate_mult_div(tree* left_arg, tree* father_node, tree* right_arg){
     if(type_comparer(left_arg, right_arg) == SAME_TYPE){
         strcpy(father_node->type, left_arg->type);
@@ -224,5 +238,31 @@ void evaluate_mult_div(tree* left_arg, tree* father_node, tree* right_arg){
 
         }
         
+    }
+}
+
+// Read operation
+void evaluate_read_write(tree* father_node, tree* arg){
+    if(input_output_comparer(arg) == SAME_TYPE){
+        strcpy(father_node->type, arg->type);
+        return;
+    } else {
+        // Receiving int list
+        if(strcmp(arg->type, "int list") == 0){
+            printf(BRED"(%d:%d) Semantic Error: Unsupported identifier type '%s'.\n"RESET, arg->line, arg->column, arg->type);
+            return;
+        }
+        // Receiving float list
+        if(strcmp(arg->type, "float list") == 0){
+            printf(BRED"(%d:%d) Semantic Error: Unsupported identifier type '%s'.\n"RESET, arg->line, arg->column, arg->type); 
+            return;
+        }
+    }
+}
+
+// Assignment
+void evaluate_assignment(tree* left_arg, tree* father_node, tree* right_arg){
+    if(assignment_comparer(left_arg, right_arg) == SAME_TYPE){
+        // strcpy(father_node->type, )
     }
 }

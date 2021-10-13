@@ -153,10 +153,12 @@ var_declaration:
         $$->node1 = create_node($1.body);
         $$->node2 = create_node($2.body);
         $$->var_scope = get_stack_top(&scope_stack);
-        $$->line = $2.line;
-        $$->column = $2.columns;
-
+        $$->line = $1.line;
+        $$->column = $1.columns;
+        $$->node2->line = $2.line;
+        $$->node2->column = $2.columns;
         $$->node2->var_scope = get_stack_top(&scope_stack); 
+
         // strcpy($$->node2->type, $1.body);
         assign_types($$->node2, symbol_table, &scope_stack);
     }
@@ -180,6 +182,7 @@ function_declaration:
         $$->node2 = create_node($2.body);
         $$->node3 = $4;
         $$->node4 = $7;
+        $$->is_function = 1;
         $$->var_scope = get_stack_top(&scope_stack);
         $$->node2->line = $2.line;
         $$->node2->column = $2.columns;
@@ -212,9 +215,10 @@ function_declaration:
         $$->node2 = create_node($3.body);
         $$->node3 = $5;
         $$->node4 = $8;
+        $$->is_function = 1;
         $$->var_scope = get_stack_top(&scope_stack);
-        $$->line = $3.line;
-        $$->column = $3.columns;
+        $$->node2->line = $3.line;
+        $$->node2->column = $3.columns;
         $$->node2->var_scope = get_stack_top(&scope_stack);
 
         // strcpy($$->node2->type, list_string);
@@ -244,10 +248,10 @@ list_declaration:
         $$->node1 = create_node(list_string);
         $$->node2 = create_node($3.body);
         $$->var_scope = get_stack_top(&scope_stack);
-        $$->line = $3.line;
-        $$->column = $3.columns;
+        $$->node2->line = $3.line;
+        $$->node2->column = $3.columns;
         $$->node2->var_scope = get_stack_top(&scope_stack);
-
+        
         strcpy($$->node2->type, list_string);
         assign_types($$->node2, symbol_table ,&scope_stack);
     }   
@@ -500,21 +504,24 @@ print:
         $$->node2 = $3;
         $$->line = $1.line;
         $$->column = $1.columns;
+        evaluate_read_write($$, $$->node2);
     }
 ;
 
 scan:
-    INPUT '(' ID ')' ';' { // Nao esta pegando o scope de ID por algum motivo
+    INPUT '(' ID ')' ';' {
         $$ = create_node("scan");
         $$->node1 = create_node($1.body);
         $$->node2 = create_node($3.body);
-        $$->node1->line = $1.line;
-        $$->node1->column = $1.columns;
+        $$->line = $1.line;
+        $$->column = $1.columns;
+        $$->var_scope = get_stack_top(&scope_stack);
         $$->node2->line = $3.line;
         $$->node2->column = $3.columns;
-        $$->var_scope = get_stack_top(&scope_stack);
+        $$->node2->var_scope = get_stack_top(&scope_stack);
         assign_types($$->node2, symbol_table, &scope_stack);
         search_undeclared_node($$->node2, symbol_table, &scope_stack);
+        evaluate_read_write($$, $$->node2);
     }
 ;
 
@@ -531,6 +538,7 @@ expression:
 
         search_undeclared_node($$->node1, symbol_table, &scope_stack);
         assign_types($$->node1, symbol_table, &scope_stack);
+
     } 
     | simple_expression {$$ = $1;}
     | error {yyerrok;}
@@ -752,5 +760,6 @@ int main(int argc, char ** argv) {
     }
     fclose(yyin);    
     yylex_destroy();
+
     return 0;
 }
