@@ -5,6 +5,5 @@
 #include "../lib/tabela.h"
 
 int function_param_amount(tree* node, symbol* s, int depth, int* pointer);
-tree* search_node(tree* node, char* node_name);
-
+tree* search_node(tree* node, char* node_name); // Useless
 #endif

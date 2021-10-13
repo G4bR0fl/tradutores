@@ -155,6 +155,9 @@ var_declaration:
         $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $2.line;
         $$->column = $2.columns;
+
+        $$->node2->var_scope = get_stack_top(&scope_stack); 
+        strcpy($$->node2->type, $1.body);
     }
 ;
 
@@ -167,9 +170,6 @@ function_declaration:
             new_symbol.function_params = param_counter;
             new_symbol.param = param;
             symbol_table[table_index] = new_symbol;
-            // for(int idx = 0; idx < param_counter; idx++){
-            //     printf("ParamType: %s\n", new_symbol.param[idx].argument_type);
-            // }
             table_index++;
             table_size++;   
             param_counter = 0;
@@ -180,8 +180,10 @@ function_declaration:
         $$->node3 = $4;
         $$->node4 = $7;
         $$->var_scope = get_stack_top(&scope_stack);
-        $$->line = $2.line;
-        $$->column = $2.columns;
+        $$->node2->line = $2.line;
+        $$->node2->column = $2.columns;
+        strcpy($$->node2->type, $1.body);
+        $$->node2->var_scope = get_stack_top(&scope_stack);
     }
     | SIMPLE_TYPE LIST_TYPE ID '(' params_list ')' '{' multiple_stmt '}' {
         char str_simple_type[50];
@@ -211,6 +213,9 @@ function_declaration:
         $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $3.line;
         $$->column = $3.columns;
+
+        strcpy($$->node2->type, list_string);
+        $$->node2->var_scope = get_stack_top(&scope_stack);
     }
 ;
 
@@ -238,6 +243,9 @@ list_declaration:
         $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $3.line;
         $$->column = $3.columns;
+
+        strcpy($$->node2->type, list_string);
+        $$->node2->var_scope = get_stack_top(&scope_stack);
     }   
 ;
 
@@ -263,7 +271,10 @@ params:
         $$->node2 = $3;
 
     } 
-    | param {$$ = $1;}
+    | param {
+        $$ = create_node("params");
+        $$->node1 = $1;
+    }   
     | error {yyerrok;}
 ;
 
@@ -277,8 +288,6 @@ param:
             strcpy(param[param_counter].argument_type, $1.body);
             param_counter++;
             symbol new_symbol = add_symbol($2.line, $2.columns, $2.body, $1.body, 0, get_stack_top(&scope_stack));
-            pop(&scope_stack);
-            scope--;
             symbol_table[table_index] = new_symbol;
             table_index++;
             table_size++;
@@ -286,8 +295,13 @@ param:
         $$ = create_node("param");
         $$->node1 = create_node($1.body);
         $$->node2 = create_node($2.body);
-        $$->line = $2.line;
-        $$->column = $2.columns;
+        $$->var_scope = get_stack_top(&scope_stack);
+        strcpy($$->node2->type, $1.body);
+        $$->node2->line = $2.line;
+        $$->node2->column = $2.columns;
+        $$->node2->var_scope = get_stack_top(&scope_stack);
+        pop(&scope_stack);
+        scope--;
     }
     | SIMPLE_TYPE LIST_TYPE ID {
         char str_simple_type[50];
@@ -307,8 +321,6 @@ param:
             strcpy(param[param_counter].argument_type, list_string);
             param_counter++;
             symbol new_symbol = add_symbol($3.line, $3.columns, $3.body, list_string, 0, get_stack_top(&scope_stack));
-            pop(&scope_stack);
-            scope--;
             symbol_table[table_index] = new_symbol;
             table_index++;
             table_size++;
@@ -317,8 +329,12 @@ param:
         $$ = create_node("param");
         $$->node1 = create_node(list_string);
         $$->node2 = create_node($3.body);
-        $$->line = $3.line;
-        $$->column = $3.columns;
+        $$->var_scope = get_stack_top(&scope_stack);
+        $$->node2->line = $3.line;
+        $$->node2->column = $3.columns;
+        $$->node2->var_scope = get_stack_top(&scope_stack);
+        pop(&scope_stack);
+        scope--;
     }
 ;
 
@@ -482,12 +498,17 @@ print:
 ;
 
 scan:
-    INPUT '(' ID ')' ';' {
+    INPUT '(' ID ')' ';' { // Nao esta pegando o scope de ID por algum motivo
         $$ = create_node("scan");
         $$->node1 = create_node($1.body);
         $$->node2 = create_node($3.body);
-        $$->line = $1.line;
-        $$->column = $1.columns;
+        $$->node1->line = $1.line;
+        $$->node1->column = $1.columns;
+        $$->node2->line = $3.line;
+        $$->node2->column = $3.columns;
+        $$->var_scope = get_stack_top(&scope_stack);
+        assign_types($$->node2, symbol_table, &scope_stack);
+        search_undeclared_node($$->node2, symbol_table, &scope_stack);
     }
 ;
 
@@ -498,8 +519,12 @@ expression:
         $$->node2 = create_node($2.body);
         $$->node3 = $3;
         $$->var_scope = get_stack_top(&scope_stack);
-        $$->line = $1.line;
-        $$->column = $1.columns;
+        $$->node1->line = $1.line;
+        $$->node1->column = $1.columns;
+
+        search_undeclared_node($$->node1, symbol_table, &scope_stack);
+        assign_types($$->node1, symbol_table, &scope_stack);
+        $$->node1->var_scope = get_stack_top(&scope_stack);
     } 
     | simple_expression {$$ = $1;}
     | error {yyerrok;}
@@ -525,7 +550,7 @@ list_operation:
         $$ = create_node("list_operation");
         $$->node1 = $1;
         $$->node2 = create_node($2.body);
-        $$->node3 = $3;     
+        $$->node3 = $3;
         $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $2.line;
         $$->column = $2.columns;
@@ -540,7 +565,7 @@ list_operation:
         $$->column = $2.columns;
     }
     | relational_expression BINARY_CONSTRUCTOR list_operation {
-        $$ = create_node("binary_constructor_recursive");
+        $$ = create_node("list_operation");
         $$->node1 = $1;
         $$->node2 = create_node($2.body);
         $$->node3 = $3;
@@ -598,29 +623,41 @@ factor:
         $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $1.line;
         $$->column = $1.columns;
+
+        search_undeclared_node($$, symbol_table, &scope_stack);
+        assign_types($$, symbol_table, &scope_stack);
     }
     | INT {
         $$ = create_node($1.body);
         $$->line = $1.line;
         $$->column = $1.columns;
+        $$->var_scope = get_stack_top(&scope_stack);
+        strcpy($$->type, "int"); 
     }
     | FLOAT {
         $$ = create_node($1.body);
         $$->line = $1.line;
         $$->column = $1.columns;
+        $$->var_scope = get_stack_top(&scope_stack);
+        strcpy($$->type, "float");
     }
     | ID '(' arguments ')' {
         $$ = create_node("factor_arguments");
         $$->node1 = create_node($1.body);
         $$->node2 = $3;
         $$->var_scope = get_stack_top(&scope_stack);
-        $$->line = $1.line;
-        $$->column = $1.columns;
+        $$->node1->line = $1.line;
+        $$->node1->column = $1.columns;
+
+        search_undeclared_node($$->node1, symbol_table, &scope_stack);
+        assign_types($$->node1, symbol_table, &scope_stack);
     } 
     | LIST_CONSTANT {
         $$ = create_node($1.body);
         $$->line = $1.line;
         $$->column = $1.columns;
+        $$->var_scope = get_stack_top(&scope_stack);
+        strcpy($$->type, "NIL");
     }
     | unary_factor {$$ = $1;}
 ;
@@ -693,21 +730,14 @@ int main(int argc, char ** argv) {
     else {
         printf("No input given.\n");
     }
-    // tree* generic = NULL;
-    // generic = search_node(root, symbol_table[main_idx].identifier);
-    // printf("%p\n", generic);
+
+    // search_undeclared_node(root, symbol_table, 0, &scope_stack);
     function_param_amount(root, symbol_table, 0, &tree_pointer);
-    // for(main_idx = 0; main_idx < table_size; main_idx++){
-    //     if(symbol_table[main_idx].is_function == 1){
-    //         printf("Params for %s: %d\n", symbol_table[main_idx].identifier, function_param_amount(root, symbol_table, 0, &tree_pointer));
-    //     }
-    // }
     main_detection(table_size);
     print_table(table_size);
     if(errors == 0){
         // printf(BCYAN"No errors detected\n" RESET);
         print_tree(root, 0);
-        // search_undeclared_node(root, symbol_table, 0, &scope_stack);
         free_node(root);
     }
     fclose(yyin);    

@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+// #include "arvore.h"
+
+
 
 // typedef struct Scope {
 //     int current_scope;
@@ -33,5 +36,8 @@ int find_last_symbol(symbol* s);
 int is_duplicated(symbol* s, char* identifier, int scope, int line, int column);
 int get_table_size(symbol* s);
 void main_detection(int size);
+char* verify_id_type(char* identifier, int scope, symbol* s);
+// char* verify_id_type(tree* node, int scope, symbol* s);
+
 
 #endif

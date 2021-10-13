@@ -16,6 +16,8 @@ void push(pilha* p, int scope_id, int* list);
 int pop(pilha* p);
 void print_stack(pilha* p);
 int get_stack_top(pilha* p);
+int get_stack_size(pilha* p);
+
 
 int* push_auxiliary_scope_list(int scope, int* list);
 int* init_aux_list(int* list);

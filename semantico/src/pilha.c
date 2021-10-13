@@ -33,6 +33,15 @@ int get_stack_top(pilha* p){
     return element;
 }
 
+int get_stack_size(pilha* p){
+    for(int i = 0; i < 1000; i++){
+        if(p->scope_array[i] == -1){
+            return i;
+        }
+    }
+    return 1;
+}
+
 void print_stack(pilha* p){
     for(int i = 0; i < 1000; i++){
         printf("%d ", p->scope_array[i]);
