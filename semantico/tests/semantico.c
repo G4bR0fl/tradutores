@@ -1,12 +1,9 @@
-
-
 int main(){
     int a;
-    int c;
-    a = soma(a, b, c);
-    soma(a, b);
-    b = 12;
-    int b;
-    read(b);
+    float b;
+    int list c;
+    float list d;
+    d / c;
+    d * c;  
     return 0;
 }

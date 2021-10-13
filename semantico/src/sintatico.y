@@ -157,7 +157,8 @@ var_declaration:
         $$->column = $2.columns;
 
         $$->node2->var_scope = get_stack_top(&scope_stack); 
-        strcpy($$->node2->type, $1.body);
+        // strcpy($$->node2->type, $1.body);
+        assign_types($$->node2, symbol_table, &scope_stack);
     }
 ;
 
@@ -182,8 +183,9 @@ function_declaration:
         $$->var_scope = get_stack_top(&scope_stack);
         $$->node2->line = $2.line;
         $$->node2->column = $2.columns;
-        strcpy($$->node2->type, $1.body);
         $$->node2->var_scope = get_stack_top(&scope_stack);
+        // strcpy($$->node2->type, $1.body);
+        assign_types($$->node2, symbol_table, &scope_stack);
     }
     | SIMPLE_TYPE LIST_TYPE ID '(' params_list ')' '{' multiple_stmt '}' {
         char str_simple_type[50];
@@ -213,9 +215,10 @@ function_declaration:
         $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $3.line;
         $$->column = $3.columns;
-
-        strcpy($$->node2->type, list_string);
         $$->node2->var_scope = get_stack_top(&scope_stack);
+
+        // strcpy($$->node2->type, list_string);
+        assign_types($$->node2, symbol_table, &scope_stack);
     }
 ;
 
@@ -243,9 +246,10 @@ list_declaration:
         $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $3.line;
         $$->column = $3.columns;
+        $$->node2->var_scope = get_stack_top(&scope_stack);
 
         strcpy($$->node2->type, list_string);
-        $$->node2->var_scope = get_stack_top(&scope_stack);
+        assign_types($$->node2, symbol_table ,&scope_stack);
     }   
 ;
 
@@ -296,7 +300,8 @@ param:
         $$->node1 = create_node($1.body);
         $$->node2 = create_node($2.body);
         $$->var_scope = get_stack_top(&scope_stack);
-        strcpy($$->node2->type, $1.body);
+        // strcpy($$->node2->type, $1.body);
+        assign_types($$->node2, symbol_table, &scope_stack);
         $$->node2->line = $2.line;
         $$->node2->column = $2.columns;
         $$->node2->var_scope = get_stack_top(&scope_stack);
@@ -333,6 +338,7 @@ param:
         $$->node2->line = $3.line;
         $$->node2->column = $3.columns;
         $$->node2->var_scope = get_stack_top(&scope_stack);
+        assign_types($$->node2, symbol_table, &scope_stack);
         pop(&scope_stack);
         scope--;
     }
@@ -521,10 +527,10 @@ expression:
         $$->var_scope = get_stack_top(&scope_stack);
         $$->node1->line = $1.line;
         $$->node1->column = $1.columns;
+        $$->node1->var_scope = get_stack_top(&scope_stack);
 
         search_undeclared_node($$->node1, symbol_table, &scope_stack);
         assign_types($$->node1, symbol_table, &scope_stack);
-        $$->node1->var_scope = get_stack_top(&scope_stack);
     } 
     | simple_expression {$$ = $1;}
     | error {yyerrok;}
@@ -599,6 +605,8 @@ arithmetic_expression:
         $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $2.line;
         $$->column = $2.columns;
+
+        evaluate_arithmetic($$->node1, $$, $$->node3);
     } 
     | term {$$ = $1;}
 ;
@@ -612,6 +620,8 @@ term:
         $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $2.line;
         $$->column = $2.columns;
+
+        evaluate_mult_div($$->node1, $$, $$->node3);
     }
     | factor {$$ = $1;}
 ;
@@ -732,11 +742,11 @@ int main(int argc, char ** argv) {
     }
 
     // search_undeclared_node(root, symbol_table, 0, &scope_stack);
-    function_param_amount(root, symbol_table, 0, &tree_pointer);
-    main_detection(table_size);
     print_table(table_size);
     if(errors == 0){
-        // printf(BCYAN"No errors detected\n" RESET);
+        printf(BCYAN"No sintatic errors detected. Printing tree and throwing possible semantic errors.\n" RESET);
+        function_param_amount(root, symbol_table, 0, &tree_pointer);
+        main_detection(table_size);
         print_tree(root, 0);
         free_node(root);
     }

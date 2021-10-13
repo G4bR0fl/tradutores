@@ -20,18 +20,6 @@ tree* create_node(char* type_name){
     return main_node;
 }
 
-tree* cast_node(char* type_name, tree* node){
-    tree* main_node = (tree*)malloc(sizeof(tree));
-    strcpy(main_node->type_name, type_name);
-    main_node->node1 = NULL;
-    main_node->node2 = NULL;
-    main_node->node3 = NULL;
-    main_node->node4 = NULL;
-    main_node->node5 = NULL;
-
-    return main_node;
-}
-
 // Free the whole tree recursively
 void free_adj_node(tree* main_node){
     if(main_node->node1 != NULL){
@@ -91,10 +79,10 @@ void search_undeclared_node(tree* main_node, symbol* table, pilha* stack){
     }
 }   
 
+// Assign types on specific tree nodes
 void assign_types(tree* node, symbol* table, pilha* stack){
     int table_size = find_last_symbol(table);
     int stack_size = get_stack_size(stack);
-    // int found = 0;
     for(int i = 0; i <= table_size; i++){
         if(strcmp(table[i].identifier, node->type_name) == 0){
             for(int j = 0; j < stack_size; j++){
@@ -105,23 +93,22 @@ void assign_types(tree* node, symbol* table, pilha* stack){
             }
         }
     }
-    printf("Identifier %s not found on:\n", node->type_name);
-    for(int z = 0; z < stack_size; z++){
-        printf("%d", stack->scope_array[z]);
-    }
-    printf("\n");
+    strcpy(node->type, "undefined");
 }
 
 // Print tree based on DFS(Depth first search)
 void print_tree(tree* main_node, int depth){
+    int node_name;
+    node_name = strlen(main_node->type);
     if(main_node == NULL){
         return;
     }else{
         for(int i = 0; i < depth; i++){
             printf(" | ");
         }
-        if(strlen(main_node->type) > 0){
-            printf(" ├─ %s (%s) -> %d\n", main_node->type_name, main_node->type, main_node->var_scope);
+        if(node_name > 0){ // Valgrind tá chateando aqui -.- (Conditional jump algo assim, ver dps se sobrar tempo);
+            printf(" ├─ %s ", main_node->type_name);
+            printf(BMAG"(%s)\n" RESET, main_node->type);
         } else printf(" ├─ %s\n", main_node->type_name);
         // } else printf(" ├─ %s -> %d\n", main_node->type_name, main_node->var_scope);
         if(main_node->node1 && strcmp(main_node->node1->type_name, "empty") != 0){

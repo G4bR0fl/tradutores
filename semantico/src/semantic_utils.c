@@ -88,3 +88,141 @@ int function_param_amount(tree* node, symbol* s, int depth, int* pointer){
     return *pointer;
 }
 
+int type_comparer(tree* left_arg, tree* right_arg){
+    if((strcmp(left_arg->type, right_arg->type) == 0) &&
+    (strcmp(left_arg->type, "int list") != 0) &&
+    (strcmp(right_arg->type, "int list") != 0) &&
+    (strcmp(left_arg->type, "float list") != 0) &&
+    (strcmp(right_arg->type, "float list") != 0)) {
+        return SAME_TYPE; 
+    } else return DIFF_TYPE;
+}
+
+void create_cast_node_left(tree* left_arg, tree* father_node, tree* right_arg, char* node_name){
+    tree* new_node = create_node(node_name);
+    new_node->node1 = left_arg;
+    father_node->node1 = new_node; 
+    strcpy(new_node->type, right_arg->type); 
+}
+
+void cast_node_right(tree* left_arg, tree* father_node, tree* right_arg, char* node_name){
+    tree* new_node = create_node("int_to_float");
+    new_node->node1 = right_arg;
+    father_node->node3 = new_node;
+    strcpy(new_node->type, left_arg->type);
+}
+
+void evaluate_arithmetic(tree* left_arg, tree* father_node, tree* right_arg){
+    if(type_comparer(left_arg, right_arg) == SAME_TYPE){
+        strcpy(father_node->type, left_arg->type);
+    } else {
+        // Float a direita
+        if((strcmp(left_arg->type, "int") == 0) && strcmp(right_arg->type, "float") == 0){
+            create_cast_node_left(left_arg, father_node, right_arg, "int_to_float");
+            evaluate_arithmetic(father_node->node1, father_node, father_node->node3);
+            return;
+        } else { // Float a esquerda
+            if((strcmp(left_arg->type, "float") == 0) && strcmp(right_arg->type, "int") == 0){ 
+                cast_node_right(left_arg, father_node, right_arg, "int_to_float");
+                evaluate_arithmetic(father_node->node1, father_node, father_node->node3);
+                return;
+            } else { 
+                // Comparacao de int e int list
+                if((strcmp(left_arg->type, "int") == 0 && strcmp(right_arg->type, "int list") == 0) || 
+                (strcmp(left_arg->type, "int list") == 0 && strcmp(right_arg->type, "int") == 0)){
+                    printf(BRED"(%d:%d) Semantic Error: Implicit conversion between int and int list\n" RESET, father_node->line, father_node->column);
+                    return;
+                } 
+                // Comparacao int e float list 
+                if((strcmp(left_arg->type, "int") == 0 && strcmp(right_arg->type, "float list") == 0) || 
+                (strcmp(left_arg->type, "float list") == 0 && strcmp(right_arg->type, "int") == 0)){
+                    printf(BRED"(%d:%d) Semantic Error: Implicit conversion between int and float list\n" RESET, father_node->line, father_node->column);
+                    return;
+                }
+                // Comparacao float e int list
+                if((strcmp(left_arg->type, "float") == 0 && strcmp(right_arg->type, "int list") == 0) || 
+                (strcmp(left_arg->type, "int list") == 0 && strcmp(right_arg->type, "float") == 0)){
+                    printf(BRED"(%d:%d) Semantic Error: Implicit conversion between float and int list\n" RESET, father_node->line, father_node->column);
+                    return;
+                }
+                // Comparacao float e float list
+                if((strcmp(left_arg->type, "float") == 0 && strcmp(right_arg->type, "float list") == 0) || 
+                (strcmp(left_arg->type, "float list") == 0 && strcmp(right_arg->type, "float") == 0)){
+                    printf(BRED"(%d:%d) Semantic Error: Implicit conversion between float and float list\n" RESET, father_node->line, father_node->column);
+                    return;
+                }
+                // Comparacao int list e float list
+                if((strcmp(left_arg->type, "int list") == 0 && strcmp(right_arg->type, "float list") == 0) || 
+                (strcmp(left_arg->type, "float list") == 0 && strcmp(right_arg->type, "int list") == 0)){
+                    printf(BRED"(%d:%d) Semantic Error: Implicit conversion between int list and float list\n" RESET, father_node->line, father_node->column);
+                    return;
+                }    
+                // Comparacao int list + int list ou float list + float list
+                if((strcmp(left_arg->type, "int list") == 0 && strcmp(right_arg->type, "int list") == 0) || 
+                (strcmp(left_arg->type, "float list") == 0 && strcmp(right_arg->type, "float list") == 0)){
+                    printf(BRED"(%d:%d) Semantic Error: Invalid operation between '%s' and '%s'\n" RESET, father_node->line, father_node->column, left_arg->type, right_arg->type);
+                    return;
+                }    
+            }
+        }
+    }
+}
+
+void evaluate_mult_div(tree* left_arg, tree* father_node, tree* right_arg){
+    if(type_comparer(left_arg, right_arg) == SAME_TYPE){
+        strcpy(father_node->type, left_arg->type);
+    } else {
+        // Float a direita
+        if((strcmp(left_arg->type, "int") == 0) && strcmp(right_arg->type, "float") == 0){
+            create_cast_node_left(left_arg, father_node, right_arg, "int_to_float");
+            evaluate_mult_div(father_node->node1, father_node, father_node->node3);
+            return;
+        }
+        // Float a esquerda
+        if((strcmp(left_arg->type, "float") == 0) && strcmp(right_arg->type, "int") == 0){ 
+            cast_node_right(left_arg, father_node, right_arg, "int_to_float");
+            evaluate_arithmetic(father_node->node1, father_node, father_node->node3);
+            return;
+        }
+        else{
+            // Comparacao int e int list
+            if((strcmp(left_arg->type, "int") == 0 && strcmp(right_arg->type, "int list") == 0) || 
+            (strcmp(left_arg->type, "int list") == 0 && strcmp(right_arg->type, "int") == 0)){
+                printf(BRED"(%d:%d) Semantic Error: Implicit conversion between int and int list\n" RESET, father_node->line, father_node->column);
+                return;
+            } 
+            // Comparacao int e float list 
+            if((strcmp(left_arg->type, "int") == 0 && strcmp(right_arg->type, "float list") == 0) || 
+            (strcmp(left_arg->type, "float list") == 0 && strcmp(right_arg->type, "int") == 0)){
+                printf(BRED"(%d:%d) Semantic Error: Implicit conversion between int and float list\n" RESET, father_node->line, father_node->column);
+                return;
+            }
+            // Comparacao float e int list
+            if((strcmp(left_arg->type, "float") == 0 && strcmp(right_arg->type, "int list") == 0) || 
+            (strcmp(left_arg->type, "int list") == 0 && strcmp(right_arg->type, "float") == 0)){
+                printf(BRED"(%d:%d) Semantic Error: Implicit conversion between float and int list\n" RESET, father_node->line, father_node->column);
+                return;
+            }
+            // Comparacao float e float list
+            if((strcmp(left_arg->type, "float") == 0 && strcmp(right_arg->type, "float list") == 0) || 
+            (strcmp(left_arg->type, "float list") == 0 && strcmp(right_arg->type, "float") == 0)){
+                printf(BRED"(%d:%d) Semantic Error: Implicit conversion between float and float list\n" RESET, father_node->line, father_node->column);
+                return;
+            }
+            // Comparacao int list e float list
+            if((strcmp(left_arg->type, "int list") == 0 && strcmp(right_arg->type, "float list") == 0) || 
+            (strcmp(left_arg->type, "float list") == 0 && strcmp(right_arg->type, "int list") == 0)){
+                printf(BRED"(%d:%d) Semantic Error: Implicit conversion between int list and float list\n" RESET, father_node->line, father_node->column);
+                return;
+            }    
+            // Comparacao (int list * int list) ou (float list * float list)
+            if((strcmp(left_arg->type, "int list") == 0 && strcmp(right_arg->type, "int list") == 0) || 
+            (strcmp(left_arg->type, "float list") == 0 && strcmp(right_arg->type, "float list") == 0)){
+                printf(BRED"(%d:%d) Semantic Error: Invalid operation between '%s' and '%s'\n" RESET, father_node->line, father_node->column, left_arg->type, right_arg->type);
+                return;
+            } 
+
+        }
+        
+    }
+}
