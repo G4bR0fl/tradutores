@@ -261,6 +261,7 @@ scope_declaration:
     '{' multiple_stmt '}' {
         $$ = create_node("scope_declaration");
         $$->node1 = $2;
+        // printf("Scope on scope_declaration: %d\n", get_stack_top(&scope_stack));
         $$->var_scope = get_stack_top(&scope_stack);
     }
 ;
@@ -538,6 +539,7 @@ expression:
 
         search_undeclared_node($$->node1, symbol_table, &scope_stack);
         assign_types($$->node1, symbol_table, &scope_stack);
+        evaluate_assignment($$->node1, $$, $$->node3);
 
     } 
     | simple_expression {$$ = $1;}
@@ -641,7 +643,7 @@ factor:
         $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $1.line;
         $$->column = $1.columns;
-
+        printf("Current id: %s(%d)\n", $$->type_name, $$->var_scope);
         search_undeclared_node($$, symbol_table, &scope_stack);
         assign_types($$, symbol_table, &scope_stack);
     }
@@ -704,6 +706,7 @@ unary_factor:
         $$ = create_node("unary_factor");
         $$->node1 = create_node($1.body);
         $$->node2 = $2;
+        $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $1.line;
         $$->column = $1.columns;
     }
@@ -711,6 +714,7 @@ unary_factor:
         $$ = create_node("unary_factor");
         $$->node1 = create_node($1.body);
         $$->node2 = $2;
+        $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $1.line;
         $$->column = $1.columns;
     } 
@@ -718,6 +722,7 @@ unary_factor:
         $$ = create_node("unary_factor");
         $$->node1 = create_node($1.body);
         $$->node2 = $2;
+        $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $1.line;
         $$->column = $1.columns;
     } 
@@ -749,7 +754,6 @@ int main(int argc, char ** argv) {
         printf("No input given.\n");
     }
 
-    // search_undeclared_node(root, symbol_table, 0, &scope_stack);
     print_table(table_size);
     if(errors == 0){
         printf(BCYAN"No sintatic errors detected. Printing tree and throwing possible semantic errors.\n" RESET);

@@ -6,6 +6,7 @@
 #define BRED "\e[0;31m"
 #define BMAG "\e[1;35m"
 #define RESET "\e[0m"
+#define BCYAN "\x1b[36m"
 
 // Creates a new node
 tree* create_node(char* type_name){
@@ -83,13 +84,23 @@ void search_undeclared_node(tree* main_node, symbol* table, pilha* stack){
 void assign_types(tree* node, symbol* table, pilha* stack){
     int table_size = find_last_symbol(table);
     int stack_size = get_stack_size(stack);
+    printf(BCYAN"Current node: %s - %d\n"RESET, node->type_name, node->var_scope);
+    int found_scope = 0;
+    for(int i = 0; i < stack_size; i++){
+        if(node->var_scope == stack->scope_array[i]) found_scope++;
+    }
     for(int i = 0; i <= table_size; i++){
+        if(strcmp(table[i].identifier, node->type_name) == 0){
+            printf("(%d:%d)Current table entry: %s\n",table[i].line, table[i].column, table[i].identifier);
+        }
         /* 
         * To enter this condition, either the ID from table has the same scope from the current node
-        * or if it's a param, that means the var->scope is 0.
+        * or if it's a param, that means the var->scope is 0
         */
-        if((strcmp(table[i].identifier, node->type_name) == 0 && (node->var_scope == table[i].scope)) || node->var_scope == 0){
+        if((strcmp(table[i].identifier, node->type_name) == 0 && (found_scope > 0))
+        || node->var_scope == 0){
             for(int j = 0; j < stack_size; j++){
+                printf(BMAG"Scope being analyzed inside array: %d\n"RESET, stack->scope_array[j]);
                 if(stack->scope_array[j] == node->var_scope){
                     strcpy(node->type, table[i].type);
                     return;
@@ -112,7 +123,7 @@ void print_tree(tree* main_node, int depth){
         }
         if(node_name > 0){ // Valgrind tá chateando aqui -.- (Conditional jump algo assim, ver dps se sobrar tempo);
             printf(" ├─ %s ", main_node->type_name);
-            printf(BMAG"(%s)\n" RESET, main_node->type);
+            printf(BMAG"(%s) - %d\n" RESET, main_node->type, main_node->var_scope);
         } else printf(" ├─ %s\n", main_node->type_name);
         // } else printf(" ├─ %s -> %d\n", main_node->type_name, main_node->var_scope);
         if(main_node->node1 && strcmp(main_node->node1->type_name, "empty") != 0){

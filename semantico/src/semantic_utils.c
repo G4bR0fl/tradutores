@@ -118,7 +118,7 @@ void create_cast_node_left(tree* left_arg, tree* father_node, tree* right_arg, c
 }
 
 void cast_node_right(tree* left_arg, tree* father_node, tree* right_arg, char* node_name){
-    tree* new_node = create_node("int_to_float");
+    tree* new_node = create_node(node_name);
     new_node->node1 = right_arg;
     father_node->node3 = new_node;
     strcpy(new_node->type, left_arg->type);
@@ -263,6 +263,20 @@ void evaluate_read_write(tree* father_node, tree* arg){
 // Assignment
 void evaluate_assignment(tree* left_arg, tree* father_node, tree* right_arg){
     if(assignment_comparer(left_arg, right_arg) == SAME_TYPE){
-        // strcpy(father_node->type, )
+        strcpy(father_node->type, left_arg->type);
+        return;
+    } else {
+        // Float a direita
+        if((strcmp(left_arg->type, "int") == 0) && (strcmp(right_arg->type, "float") == 0)){
+            cast_node_right(left_arg, father_node, right_arg, "float_to_int");
+            evaluate_assignment(father_node->node1, father_node, father_node->node3);
+            return;
+        }
+        // Int a direita
+        if((strcmp(left_arg->type, "float") == 0) && (strcmp(right_arg->type, "int") == 0)){
+            cast_node_right(left_arg, father_node, right_arg, "int_to_float");
+            evaluate_assignment(father_node->node1, father_node, father_node->node3);
+            return;
+        }
     }
 }
