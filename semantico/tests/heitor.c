@@ -4,7 +4,7 @@ int to_float(int num) {
     return num*3.1415;
 }
 
-int beq_100(float num, int a, int b, int c) {
+int beq_100(float num, float a, float b, float c) {
     return num >= 100.00;
 }
 

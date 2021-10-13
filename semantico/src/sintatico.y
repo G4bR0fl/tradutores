@@ -160,7 +160,8 @@ var_declaration:
         $$->node2->var_scope = get_stack_top(&scope_stack); 
 
         strcpy($$->node2->type, $1.body);
-        // assign_types($$->node2, symbol_table, &scope_stack); -> not working when the same variable is redeclared in another scope
+        assign_types($$->node2, symbol_table, &scope_stack); 
+        // -> not working when the same variable is redeclared in another scope
     }
 ;
 
@@ -188,7 +189,7 @@ function_declaration:
         $$->node2->column = $2.columns;
         $$->node2->var_scope = get_stack_top(&scope_stack);
         strcpy($$->node2->type, $1.body);
-        // assign_types($$->node2, symbol_table, &scope_stack);
+        assign_types($$->node2, symbol_table, &scope_stack);
     }
     | SIMPLE_TYPE LIST_TYPE ID '(' params_list ')' '{' multiple_stmt '}' {
         char str_simple_type[50];
@@ -222,7 +223,7 @@ function_declaration:
         $$->node2->var_scope = get_stack_top(&scope_stack);
 
         strcpy($$->node2->type, list_string);
-        // assign_types($$->node2, symbol_table, &scope_stack);
+        assign_types($$->node2, symbol_table, &scope_stack);
     }
 ;
 
@@ -253,7 +254,7 @@ list_declaration:
         $$->node2->var_scope = get_stack_top(&scope_stack);
         
         strcpy($$->node2->type, list_string);
-        // assign_types($$->node2, symbol_table ,&scope_stack);
+        assign_types($$->node2, symbol_table ,&scope_stack);
     }   
 ;
 
@@ -304,10 +305,10 @@ param:
         $$->node1 = create_node($1.body);
         $$->node2 = create_node($2.body);
         $$->var_scope = get_stack_top(&scope_stack);
-        // strcpy($$->node2->type, $1.body);
-        assign_types($$->node2, symbol_table, &scope_stack);
         $$->node2->line = $2.line;
         $$->node2->column = $2.columns;
+        strcpy($$->node2->type, $1.body);
+        assign_types($$->node2, symbol_table, &scope_stack);
         $$->node2->var_scope = get_stack_top(&scope_stack);
         pop(&scope_stack);
         scope--;
@@ -342,6 +343,7 @@ param:
         $$->node2->line = $3.line;
         $$->node2->column = $3.columns;
         $$->node2->var_scope = get_stack_top(&scope_stack);
+        strcpy($$->node2->type, list_string);
         assign_types($$->node2, symbol_table, &scope_stack);
         pop(&scope_stack);
         scope--;
@@ -535,7 +537,6 @@ expression:
         $$->node1->line = $1.line;
         $$->node1->column = $1.columns;
         $$->node1->var_scope = get_stack_top(&scope_stack);
-
         search_undeclared_node($$->node1, symbol_table, &scope_stack);
         assign_types($$->node1, symbol_table, &scope_stack);
         evaluate_assignment($$->node1, $$, $$->node3);
