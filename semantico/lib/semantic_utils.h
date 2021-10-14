@@ -6,14 +6,16 @@
 
 int function_param_amount(tree* node, symbol* s, int depth, int* pointer);
 void create_cast_node_left(tree* left_arg, tree* father_node, tree* right_arg, char* node_name);
+void cast_node_right(tree* left_arg, tree* father_node, tree* right_arg, char* node_name);
+void cast_nil(tree* left_arg, tree* right_arg);
 int type_comparer(tree* left_arg, tree* right_arg);
 int input_output_comparer(tree* arg);
 int assignment_comparer(tree* left_arg, tree* right_arg);
-void cast_node_right(tree* left_arg, tree* father_node, tree* right_arg, char* node_name);
 void evaluate_arithmetic(tree* left_arg, tree* father_node, tree* right_arg);
 void evaluate_mult_div(tree* left_arg, tree* father_node, tree* right_arg);
 void evaluate_read_write(tree* father_node, tree* arg);
 void evaluate_assignment(tree* left_arg, tree* father_node, tree* right_arg);
+void evaluate_relational(tree* left_arg, tree* father_node, tree* right_arg);
 
 enum TYPE_VERIFIER{
     DIFF_TYPE,

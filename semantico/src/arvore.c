@@ -204,7 +204,7 @@ void print_tree(tree* main_node, int depth){
         }
         if(node_name > 0){ // Valgrind tá chateando aqui -.- (Conditional jump algo assim, ver dps se sobrar tempo);
             printf(" ├─ %s ", main_node->type_name);
-            printf(BMAG"(%s) - %d\n" RESET, main_node->type, main_node->var_scope);
+            printf(BMAG"(%s)\n" RESET, main_node->type);
         } else printf(" ├─ %s\n", main_node->type_name);
         // } else printf(" ├─ %s -> %d\n", main_node->type_name, main_node->var_scope);
         if(main_node->node1 && strcmp(main_node->node1->type_name, "empty") != 0){

@@ -439,6 +439,7 @@ return_stmt:
         $$->node1 = $2;
         $$->line = $1.line;
         $$->column = $1.columns;
+        // Return treatment
     }
 ;
 
@@ -602,6 +603,7 @@ relational_expression:
         $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $2.line;
         $$->column = $2.columns;
+        evaluate_relational($$->node1, $$, $$->node3);
     }
     | arithmetic_expression {$$ = $1;}
 ;
@@ -665,6 +667,7 @@ factor:
         $$->node1 = create_node($1.body);
         $$->node2 = $3;
         $$->var_scope = get_stack_top(&scope_stack);
+        $$->node1->var_scope = get_stack_top(&scope_stack);
         $$->node1->line = $1.line;
         $$->node1->column = $1.columns;
 
