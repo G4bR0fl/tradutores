@@ -10,75 +10,17 @@
 #define BMAG "\e[1;35m"
 #define RESET "\e[0m"
 
-// Temporary fix
-void search_return(tree* node, char* node_name, char* type){
-    if(node == NULL){
-        return;
-    }
-    if(strcmp(node->type_name, "empty") == 0){
-        return;
-    }
-    if((strcmp(node->type_name, "return") == 0)){
-        strcpy(node->type, type);
-        return;
-    }else{
-        search_return(node->node1, node_name, type);
-        search_return(node->node2, node_name, type);
-        search_return(node->node3, node_name, type);
-        search_return(node->node4, node_name, type);
-        search_return(node->node5, node_name, type);
-    }
-}
-
 // Get the amount of params called by all functions and throws errors if it's not correct.
-int function_param_amount(tree* node, symbol* s, int depth, int* pointer){
+void function_param_amount(symbol* s, int args_counted, char* name, int line, int column){
     symbol found_symbol;
-    if(node == NULL){ 
-        return 0;
-    }
-    if(strcmp(node->type_name, "empty") == 0){
-        return 0;
-    }
-    // Compare current node to a function call node "factor_arguments"
-    if(strcmp(node->type_name, "factor_arguments") == 0){
-        found_symbol = find_symbol(s, node->node1->type_name);
-        if(found_symbol.not_empty == 1){
-            function_param_amount(node->node2, &found_symbol, depth+1, pointer);
-            if(found_symbol.function_params != *pointer){
-                printf(BRED"(%d:%d) Semantic Error: '%s' expected %d arguments but received %d.\n" RESET, node->line, node->column, found_symbol.identifier, found_symbol.function_params, *pointer);
-            }
-            *pointer = 0;
-        }
-    }else{
-        if((strcmp(node->type_name, "arguments") == 0) && (strcmp(node->node1->type_name, "arguments") != 0)){
-            return ++*pointer;
-        }else{
-            function_param_amount(node->node1, s, depth+1, pointer);    
-        }
-        if((strcmp(node->type_name, "arguments") == 0) && (strcmp(node->node2->type_name, "arguments") != 0)){
-            return ++*pointer;
-        }else{
-            function_param_amount(node->node2, s, depth+1, pointer);
-        }
-        if((strcmp(node->type_name, "arguments") == 0) && (strcmp(node->node3->type_name, "arguments") != 0)){
-            return ++*pointer;
-        }else{
-            function_param_amount(node->node3, s, depth+1, pointer);
-        }
-        if((strcmp(node->type_name, "arguments") == 0) && (strcmp(node->node4->type_name, "arguments") != 0)){
-            return ++*pointer;
-        }else{
-            function_param_amount(node->node4, s, depth+1, pointer);
-        }
-        if((strcmp(node->type_name, "arguments") == 0) && (strcmp(node->node5->type_name, "arguments") != 0)){
-            return ++*pointer;
-        }else{
-            function_param_amount(node->node5, s, depth+1, pointer);
+    found_symbol = find_symbol(s, name);
+    if(found_symbol.not_empty == 1){
+        if(found_symbol.function_params != args_counted){
+            printf(BRED"(%d:%d) Semantic Error: function '%s' expected %d arguments but received %d.\n" RESET, line, column, found_symbol.identifier, found_symbol.function_params, args_counted);
         }
     }
-
-    return *pointer;
 }
+
 // Checks if both types from an expression are correct
 int type_comparer(tree* left_arg, tree* right_arg){
     if(strcmp(left_arg->type, right_arg->type) == 0){
@@ -392,6 +334,7 @@ void evaluate_assignment(tree* left_arg, tree* father_node, tree* right_arg){
         (strcmp(left_arg->type, "int list") == 0 && strcmp(right_arg->type, "float list") == 0)){
             printf(BRED"(%d:%d) Semantic Error: Invalid assignment between '%s' and '%s'\n"RESET, left_arg->line, left_arg->column, left_arg->type, right_arg->type);
         }
+        
     }
 }
 
@@ -461,6 +404,7 @@ void evaluate_relational(tree* left_arg, tree* father_node, tree* right_arg){
     * Tratar apenas 'int' 'float' - OK
     * No pai precisa ser 'int' - OK
     * Nao pode comparar funcao(id), function call pode - X
+    * Para todas relacionais: Nao pode comparar funcao(id sem '()') - X
 */
 void evaluate_logical(tree* left_arg, tree* father_node, tree* right_arg){
     if(type_comparer(left_arg, right_arg) == SAME_TYPE){
@@ -502,15 +446,13 @@ void evaluate_logical(tree* left_arg, tree* father_node, tree* right_arg){
     }
 }
 
-// return - Not implemented
+// Return statements - Done 
 /* 
-    * PRIORIDADE: No sintatico quando passa pelo return ainda ta sem tipo!!!
-    * 'int' com 'int' e 'float' com 'float' e conversao para float caso necessario -
+    * PRIORIDADE: No sintatico quando passa pelo return ainda ta sem tipo!!! - OK
+    * 'int' com 'int' e 'float' com 'float' e conversao para float caso necessario - - OK
     * Em caso de NIL
-    *   - Comparar com 'float list' ou 'int list' e fazer a conversao - 
+    *   - Comparar com 'float list' ou 'int list' e fazer a conversao -  
     *   - 'int list' so compara com 'int list', mesma coisa pra 'float list', checar o tipo do NIL - 
-    * No pai precisa ser 'int' - 
-    * Para todas relacionais: Nao pode comparar funcao(id sem '()') - 
     * Nao pode comparar funcao(id), function call(factor args) pode. Ex: a (int) < soma(a, b) (int) -
 */
 void evaluate_return(tree* father_node, tree* right_arg, char* return_type){
@@ -519,12 +461,65 @@ void evaluate_return(tree* father_node, tree* right_arg, char* return_type){
         return;
     } else {
         strcpy(father_node->type, return_type);
-        // printf("Tipo do return nessa func: %s\n", return_type);
-        // Float a direita
-        // if((strcmp(father_node->type, "int") == 0) && (strcmp(right_arg->type, "float") == 0)){
-        //     cast_return(father_node, right_arg, "float_to_int");
-        //     return;
-        // }
+        // Cast pra inteiro
+        if((strcmp(father_node->type, "int") == 0) && (strcmp(right_arg->type, "float") == 0)){
+            cast_return(father_node, right_arg, "float_to_int");
+            return;
+        }
+        // Cast pra float
+        if(strcmp(father_node->type, "float") == 0 && strcmp(right_arg->type, "int") == 0){
+            cast_return(father_node, right_arg, "int_to_float");
+            return;
+        }
+        // Int recebendo int_list, float_list, NIL
+        if((strcmp(father_node->type, "int") == 0 && strcmp(right_arg->type, "int list") == 0) ||
+        (strcmp(father_node->type, "int") == 0 && strcmp(right_arg->type, "float list") == 0) ||
+        (strcmp(father_node->type, "int") == 0 && strcmp(right_arg->type, "NIL") == 0)){
+            printf(BRED"(%d:%d) Semantic Error: Invalid return type '%s'. Expected 'int' or 'float'\n" RESET, father_node->line, father_node->column, right_arg->type);
+            return;   
+        }
+        // Float recebendo int list, float list, NIL
+        if((strcmp(father_node->type, "float") == 0 && strcmp(right_arg->type, "int list") == 0) ||
+        (strcmp(father_node->type, "float") == 0 && strcmp(right_arg->type, "float list") == 0) ||
+        (strcmp(father_node->type, "float") == 0 && strcmp(right_arg->type, "NIL") == 0)){
+            printf(BRED"(%d:%d) Semantic Error: Invalid return type '%s'. Expected 'int' or 'float'\n" RESET, father_node->line, father_node->column, right_arg->type);
+            return;   
+        }
+        // int list ou float list recebendo int ou float ou tipo de lista distinto
+        if( (strcmp(father_node->type, "int list") == 0 && strcmp(right_arg->type, "int") == 0) ||
+        (strcmp(father_node->type, "int list") == 0 && strcmp(right_arg->type, "float") == 0) || 
+        (strcmp(father_node->type, "float list") == 0 && strcmp(right_arg->type, "int") == 0) || 
+        (strcmp(father_node->type, "float list") == 0 && strcmp(right_arg->type, "float") == 0) || 
+        (strcmp(father_node->type, "float list") == 0 && strcmp(right_arg->type, "int list") == 0) ||
+        (strcmp(father_node->type, "int list") == 0 && strcmp(right_arg->type, "float list") == 0)){
+            printf(BRED"(%d:%d) Semantic Error: Invalid assignment between '%s' and '%s'\n"RESET, father_node->line, father_node->column, father_node->type, right_arg->type);
+        }
+        // int list ou float list recebendo NIL e fazendo a conversao
+        if( ((strcmp(father_node->type, "int list") == 0) && (strcmp(right_arg->type, "NIL") == 0)) ||
+            ((strcmp(father_node->type, "float list") == 0) && (strcmp(right_arg->type, "NIL") == 0)) ){
+                cast_nil(father_node, right_arg);
+                return;
+        }
+    }
+}
+
+// DFS search for this lad
+void search_return(tree* node, char* node_name, char* type){
+    if(node == NULL){
+        return;
+    }
+    if(strcmp(node->type_name, "empty") == 0){
+        return;
+    }
+    if((strcmp(node->type_name, "return") == 0)){
+        strcpy(node->type, type);
+        evaluate_return(node, node->node1, type);
+    }else{
+        search_return(node->node1, node_name, type);
+        search_return(node->node2, node_name, type);
+        search_return(node->node3, node_name, type);
+        search_return(node->node4, node_name, type);
+        search_return(node->node5, node_name, type);
     }
 }
 
@@ -670,9 +665,9 @@ void evaluate_list_exp(tree* left_arg, tree* father_node, tree* right_arg, tree*
         // Operador a direita 'int list' ou 'float list' 
         if( (strcmp(left_arg->type, "int") == 0 && ((strcmp(right_arg->type, "int list") == 0) || strcmp(right_arg->type, "float list") == 0)) || 
         (strcmp(left_arg->type, "float") == 0 && ((strcmp(right_arg->type, "int list") == 0) || strcmp(right_arg->type, "float list") == 0)) ){
-            strcat(left_arg->type, "\x20");
-            strcat(left_arg->type, "list");
             strcpy(father_node->type, left_arg->type);
+            strcat(father_node->type, "\x20");
+            strcat(father_node->type, "list");
             return;
         }
         // Operando a direita recebendo int, float ou NIL
@@ -733,3 +728,4 @@ void evaluate_list_exp(tree* left_arg, tree* father_node, tree* right_arg, tree*
         }
     }
 }
+

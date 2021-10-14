@@ -14,7 +14,7 @@ int list list_elements(int list aux_list){
 int main(int a){
     int i;
 	float result;
-	int list FL;
+	float list FL;
 	FL = NIL;
     i = 2.5;
 	result = i + 3.1;
@@ -26,6 +26,18 @@ int main(int a){
 	FL = modify_occurences >> float_list;
 	float_list = gt_n <<  FL;
 	if (float_list != NIL) {
+		{
+			int a;
+			{
+				a = 20;
+			}
+			int b;
+			{
+				{
+					b = 20-1;
+				}
+			}
+		}
 		float list aux_list;
 		int n; 
 		n = 0;

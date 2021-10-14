@@ -29,12 +29,11 @@
 
     void yyerror(const char* msg);
 
-    int main_idx = 0; // used on loops inside main(), at the end of the file;
     int tree_pointer = 0;
+    int arg_counter = 0; // counts argument from function
     int param_counter = 0; // counts specific function argument;
     int table_index = 0; // Indexes symbol_table;
     int table_size = 0; // Adds up by +1 when a new symbol is added on the symbol_table;
-    char return_type[100]; // Global return variable 
     tree* root; // First tree node(only reachable when the tree complete);
     
 %}  
@@ -190,7 +189,7 @@ function_declaration:
         $$->node2->var_scope = get_stack_top(&scope_stack);
         strcpy($$->node2->type, $1.body);
         assign_types($$->node2, symbol_table, &scope_stack);
-        // search_return($$, "return", $1.body);
+        search_return($$, "return", $1.body);
     }
     | SIMPLE_TYPE LIST_TYPE ID '(' params_list ')' '{' multiple_stmt '}' {
         char str_simple_type[50];
@@ -225,7 +224,7 @@ function_declaration:
 
         strcpy($$->node2->type, list_string);
         assign_types($$->node2, symbol_table, &scope_stack);
-        // search_return($$, "return", list_string);
+        search_return($$, "return", list_string);
     }
 ;
 
@@ -442,7 +441,6 @@ return_stmt:
         $$->line = $1.line;
         $$->column = $1.columns;
 
-        evaluate_return($$, $$->node1, return_type);
     }
 ;
 
@@ -673,7 +671,7 @@ factor:
         $$->var_scope = get_stack_top(&scope_stack);
         strcpy($$->type, "float");
     }
-    | ID '(' arguments ')' {
+    | ID '(' arguments_list ')' {
         $$ = create_node("factor_arguments");
         $$->node1 = create_node($1.body);
         $$->node2 = $3;
@@ -681,7 +679,8 @@ factor:
         $$->node1->var_scope = get_stack_top(&scope_stack);
         $$->node1->line = $1.line;
         $$->node1->column = $1.columns;
-
+        function_param_amount(symbol_table,arg_counter,$1.body, $1.line, $1.columns);
+        arg_counter = 0;
         search_undeclared_node($$->node1, symbol_table, &scope_stack);
         assign_types($$->node1, symbol_table, &scope_stack);
     } 
@@ -700,10 +699,12 @@ arguments:
         $$ = create_node("arguments");
         $$->node1 = $1;
         $$->node2 = $3; 
+        arg_counter++;
     } 
     | expression {
         $$ = create_node("arguments");
         $$->node1 = $1;
+        arg_counter++;
     }
 ;
 
@@ -777,8 +778,7 @@ int main(int argc, char ** argv) {
     print_table(table_size);
     if(errors == 0){
         printf(BCYAN"No sintatic errors detected. Printing tree and throwing possible semantic errors.\n" RESET);
-        // return provavelmente vem aqui
-        function_param_amount(root, symbol_table, 0, &tree_pointer); // so funciona quando ta certo por conta da referencia da arvore. Pra testar isso eh so botar uma funcao com mais ou menos argumentos q ela aceita
+        //function_param_amount(root, symbol_table, 0, &tree_pointer); // so funciona quando ta certo por conta da referencia da arvore. Pra testar isso eh so botar uma funcao com mais ou menos argumentos q ela aceita
         print_tree(root, 0);
         free_node(root);
     }

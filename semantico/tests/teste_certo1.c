@@ -1,3 +1,23 @@
+float list lista;
+
+float times_15(int a, int b){
+    int c;
+    c = (a * b)*15;
+    return c;
+}
+
+int lt_gt(){
+    int a;
+    int b;
+    int c;
+    a = 10;
+    b = 20;
+    c = 30;
+    if((a > b && c > a) || (a < -b)){
+        return c;
+    }else return 10.3;
+}
+
 float list unique_list() {
     float elem;
     float list new_list;
@@ -13,6 +33,8 @@ int main(){
     float b;
     a && b;
     int c;
+    float d;
+    d = lt_gt();
     c = a || b;
     writeln("Lista com head e tail");
     float list float_list;

@@ -5,7 +5,7 @@
 #include "../lib/tabela.h"
 
 void search_return(tree* node, char* node_name, char* type);
-int function_param_amount(tree* node, symbol* s, int depth, int* pointer);
+void function_param_amount(symbol* s, int args_counted, char* name, int line, int column);
 
 // Node Casting
 void create_cast_node_left(tree* left_arg, tree* father_node, tree* right_arg, char* node_name);
