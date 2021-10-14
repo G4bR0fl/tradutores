@@ -9,6 +9,11 @@ float list unique_list() {
 }
 
 int main(){
+    int a;
+    float b;
+    a && b;
+    int c;
+    c = a || b;
     writeln("Lista com head e tail");
     float list float_list;
     float_list = unique_list;

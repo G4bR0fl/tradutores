@@ -34,6 +34,7 @@
     int param_counter = 0; // counts specific function argument;
     int table_index = 0; // Indexes symbol_table;
     int table_size = 0; // Adds up by +1 when a new symbol is added on the symbol_table;
+    char return_type[100]; // Global return variable 
     tree* root; // First tree node(only reachable when the tree complete);
     
 %}  
@@ -161,7 +162,6 @@ var_declaration:
 
         strcpy($$->node2->type, $1.body);
         assign_types($$->node2, symbol_table, &scope_stack); 
-        // -> not working when the same variable is redeclared in another scope
     }
 ;
 
@@ -183,13 +183,14 @@ function_declaration:
         $$->node2 = create_node($2.body);
         $$->node3 = $4;
         $$->node4 = $7;
-        $$->is_function = 1;
         $$->var_scope = get_stack_top(&scope_stack);
+        $$->node2->is_function = 1;
         $$->node2->line = $2.line;
         $$->node2->column = $2.columns;
         $$->node2->var_scope = get_stack_top(&scope_stack);
         strcpy($$->node2->type, $1.body);
         assign_types($$->node2, symbol_table, &scope_stack);
+        // search_return($$, "return", $1.body);
     }
     | SIMPLE_TYPE LIST_TYPE ID '(' params_list ')' '{' multiple_stmt '}' {
         char str_simple_type[50];
@@ -216,14 +217,15 @@ function_declaration:
         $$->node2 = create_node($3.body);
         $$->node3 = $5;
         $$->node4 = $8;
-        $$->is_function = 1;
         $$->var_scope = get_stack_top(&scope_stack);
+        $$->node2->is_function = 1;
         $$->node2->line = $3.line;
         $$->node2->column = $3.columns;
         $$->node2->var_scope = get_stack_top(&scope_stack);
 
         strcpy($$->node2->type, list_string);
         assign_types($$->node2, symbol_table, &scope_stack);
+        // search_return($$, "return", list_string);
     }
 ;
 
@@ -433,13 +435,14 @@ for_stmt:
 ;
 
 return_stmt:
-    RETURN ';' {$$ = create_node($1.body);}
+    RETURN ';' {$$ = create_node($1.body);} 
     | RETURN expression ';' {
         $$ = create_node($1.body);
         $$->node1 = $2;
         $$->line = $1.line;
         $$->column = $1.columns;
-        // Return treatment
+
+        evaluate_return($$, $$->node1, return_type);
     }
 ;
 
@@ -479,7 +482,7 @@ expression_stmt:
 
 for_variation_null_expressions:
     expression {$$ = $1;}
-    | %empty{$$ = create_node("empty");}
+    | %empty {$$ = create_node("empty");}
 ;
 
 stmt:
@@ -558,6 +561,8 @@ simple_expression:
         $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $2.line;
         $$->column = $2.columns;
+        
+        evaluate_logical($$->node1, $$, $$->node3);
     }
 ;   
 
@@ -571,6 +576,8 @@ list_operation:
         $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $2.line;
         $$->column = $2.columns;
+
+        evaluate_list_exp($$->node1, $$, $$->node3, $$->node2);
     }
     | relational_expression FILTER list_operation {
         $$ = create_node("list_operation");
@@ -580,6 +587,8 @@ list_operation:
         $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $2.line;
         $$->column = $2.columns;
+
+        evaluate_list_exp($$->node1, $$, $$->node3, $$->node2);
     }
     | relational_expression BINARY_CONSTRUCTOR list_operation {
         $$ = create_node("list_operation");
@@ -589,6 +598,8 @@ list_operation:
         $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $2.line;
         $$->column = $2.columns;
+
+        evaluate_list_exp($$->node1, $$, $$->node3, $$->node2);
     }
     | relational_expression {$$ = $1;}
 ;
@@ -711,6 +722,8 @@ unary_factor:
         $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $1.line;
         $$->column = $1.columns;
+
+        evaluate_unary($$->node1, $$, $$->node2);
     }
     | TAIL factor{
         $$ = create_node("unary_factor");
@@ -719,6 +732,8 @@ unary_factor:
         $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $1.line;
         $$->column = $1.columns;
+
+        evaluate_unary($$->node1, $$, $$->node2);
     } 
     | HEADER factor{
         $$ = create_node("unary_factor");
@@ -727,6 +742,8 @@ unary_factor:
         $$->var_scope = get_stack_top(&scope_stack);
         $$->line = $1.line;
         $$->column = $1.columns;
+
+        evaluate_unary($$->node1, $$, $$->node2);
     } 
 ;
 
@@ -756,11 +773,12 @@ int main(int argc, char ** argv) {
         printf("No input given.\n");
     }
 
+    main_detection(table_size);
     print_table(table_size);
     if(errors == 0){
         printf(BCYAN"No sintatic errors detected. Printing tree and throwing possible semantic errors.\n" RESET);
-        function_param_amount(root, symbol_table, 0, &tree_pointer);
-        main_detection(table_size);
+        // return provavelmente vem aqui
+        function_param_amount(root, symbol_table, 0, &tree_pointer); // so funciona quando ta certo por conta da referencia da arvore. Pra testar isso eh so botar uma funcao com mais ou menos argumentos q ela aceita
         print_tree(root, 0);
         free_node(root);
     }

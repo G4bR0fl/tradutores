@@ -10,7 +10,7 @@ int list read_list(int n) {
 		int elem;
 		writeln("Digite o elemento da lista: ");
 		read(elem);
-		new = elem : new;
+		new = elem : elem : elem : NIL;
 	}
   
   

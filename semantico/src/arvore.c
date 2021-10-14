@@ -84,7 +84,6 @@ void search_undeclared_node(tree* main_node, symbol* table, pilha* stack){
 void assign_types(tree* node, symbol* table, pilha* stack){
     int table_size = find_last_symbol(table);
     int stack_size = get_stack_size(stack);
-    // int found_scope = 0;
 
      // returns if node has a declared type already
     if(strlen(node->type) != 0) return;
@@ -96,101 +95,16 @@ void assign_types(tree* node, symbol* table, pilha* stack){
         }
     }
 
-    // for(int i = 0; i < stack_size; i++){
-    //     if(node->var_scope == stack->scope_array[i]){
-    //         printf(BCYAN"Found on stack->scope_array[%d]\n"RESET, i);
-    //         found_scope++; // posso retornar i(posicao do scope array)
-    //     } 
-    // }
-
-    // printf("(%d:%d)Current node Scope: %s - %d (%s)\n",node->line, node->column, node->type_name, node->var_scope, node->type);
     for(int j = 0; j < stack_size; j++){
         for(int i = 0; i < table_size; i++){
             if(stack->scope_array[j] == table[i].scope && strcmp(node->type_name, table[i].identifier) == 0){
                 strcpy(node->type, table[i].type);
-                // printf("Assigned %s (%d:%d)\n", table[i].type, table[i].line, table[i].column);
-                // printf("\n");
                 return;
             }
         }
     }
-    // for(int i = 0; i < table_size; i++){
-    //     if(strcmp(table[i].identifier, node->type_name) == 0){
-    //         printf("(%d:%d)Current node Scope: %s - %d (%s)\n",node->line, node->column, node->type_name, node->var_scope, node->type);
-    //     }
-    //     /* 
-    //     * To enter this condition, either the ID from table has the same scope from the current node
-    //     * or if it's a param, that means the var->scope is 0
-    //     */
-    //     if((strcmp(table[i].identifier, node->type_name) == 0 && (found_scope > 0))){
-    //         for(int j = 0; j < stack_size; j++){
-    //             printf(BMAG"Scope being analyzed inside array: %d\n"RESET, stack->scope_array[j]);
-    //             if(stack->scope_array[j] == node->var_scope ){
-    //                 strcpy(node->type, table[i].type);
-    //                 printf("Assigned %s (%d:%d)\n", table[i].type, table[i].line, table[i].column);
-    //                 printf("\n");
-    //                 return;
-    //             }
-    //         }
-    //     }
-    // }
     strcpy(node->type, "undefined");
 }
-
-
-// Function before last git stash
-// void assign_types(tree* node, symbol* table, pilha* stack){
-//     int table_size = find_last_symbol(table);
-//     int stack_size = get_stack_size(stack);
-//     printf(BCYAN"Current node: %s - %d\n"RESET, node->type_name, node->var_scope);
-//     int found_scope = 0;
-//     printf("Current scopes: ");
-//     for(int i = 0; i < stack_size; i++){
-//         printf("%d ", stack->scope_array[i]);
-//         if(node->var_scope == stack->scope_array[i]){
-//             found_scope++;
-//             printf(BMAG"found on %d!\n"RESET, node->var_scope);
-//         } 
-//     }
-    // if(strlen(node->type) == 0){
-    //     printf(BRED"Nao ta tipada: %s (%s)\n" RESET, node->type_name, node->type);
-    // } else printf(BCYAN"TIPADA: %s (%s)\n" RESET, node->type_name, node->type);
-//     for(int i = 0; i < table_size; i++){
-//         if(strcmp(table[i].identifier, node->type_name) == 0){
-//             printf("(%d:%d)Current table entry: %s -> %d\n",table[i].line, table[i].column, table[i].identifier, table[i].scope);
-//         }
-//         /* 
-//         * To enter this condition, either the ID from table has the same scope from the current node
-//         * or if it's a param, that means the var->scope is 0
-//         */
-//         if((strcmp(table[i].identifier, node->type_name) == 0 && table[i].scope == node->var_scope)){
-//         // (strcmp(table[i].identifier, node->type_name) == 0 && (found_scope > 0)) ){  // && (table[i].scope == node->var_scope) // || node->var_scope == 0 found_scope > 0
-//             for(int j = 0; j < stack_size; j++){ 
-//                 printf(BMAG"Scope being analyzed inside array: %d\n"RESET, stack->scope_array[j]);
-//                 // printf("Current var scope: %d\n", node->var_scope);
-//                 if(stack->scope_array[j] == node->var_scope ){
-//                     strcpy(node->type, table[i].type);
-//                     printf(BCYAN"Variavel tipada NO IF: %s (%s)\n"RESET, node->type_name, node->type);
-//                     printf("\n");
-//                     return;
-//                 }
-//             }
-//         } 
-//         // else if((strcmp(table[i].identifier, node->type_name) == 0 && (found_scope > 0))){
-//         //     for(int j = 0; j < stack_size; j++){ 
-//         //         printf(BMAG"Scope being analyzed inside array: %d\n"RESET, stack->scope_array[j]);
-//         //         printf("Current var scope: %d\n", node->var_scope);
-//         //         if(stack->scope_array[j] == node->var_scope ){
-//         //             strcpy(node->type, table[i].type);
-//         //             printf(BCYAN"Variavel tipada no ELSE: %s (%s)\n"RESET, node->type_name, node->type);
-//         //             printf("\n");
-//         //             return;
-//         //         }
-//         //     }
-//         // }
-//     }
-//     strcpy(node->type, "undefined");
-// }
 
 // Print tree based on DFS(Depth first search)
 void print_tree(tree* main_node, int depth){

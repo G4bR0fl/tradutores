@@ -1,6 +1,4 @@
-
-
-float modify_occurences(float i) {
+float modify_occurences(int i) {
 	return i + 3.2;
 }
 
@@ -15,12 +13,15 @@ int list list_elements(int list aux_list){
 
 int main(int a){
     int i;
-	float list FL;
-    i = 2;
+	float result;
+	int list FL;
+	FL = NIL;
+    i = 2.5;
+	result = i + 3.1;
     writeln("V3m c0m1G0 \t\r\\r//*\t*//m3u P4e\t//");
 	int n;
 	float list float_list;
-	read(list_elements);
+	read(n);
 	float_list = list_elements : float_list;
 	FL = modify_occurences >> float_list;
 	float_list = gt_n <<  FL;

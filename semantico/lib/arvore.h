@@ -26,5 +26,6 @@ void free_adj_node(tree* main_node);
 void print_tree(tree* main_node, int depth);
 void search_undeclared_node(tree* main_node, symbol* table, pilha* stack);
 void assign_types(tree* node, symbol* table, pilha* stack);
+void assign_return(tree* node);
 
 #endif

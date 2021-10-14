@@ -2,10 +2,18 @@ int bi(int a, int b){
     float i;
     float i;
     i = a;
-    float* b;
-    float b;
-    float b;
-    #
+    float list d;
+    for(i;z;) a = 3;
+    int c;
+    float e;
+    int list d;
+    d && b;
+    e + b;
+    i = e;
+    
+    return 1;
 }
 int a = b;
 
+int c;
+int c;
