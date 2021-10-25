@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "string.h": "c",
-        "tabela.h": "c"
+        "tabela.h": "c",
+        "semantic_utils.h": "c",
+        "stdio.h": "c"
     }
 }
