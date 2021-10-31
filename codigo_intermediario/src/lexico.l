@@ -9,6 +9,7 @@
     #include "../lib/arvore.h"
     #include "../lib/pilha.h"
     #include "../lib/semantic_utils.h"
+    #include "../lib/tac.h"
     #include "sintatico.tab.h"
 
     #define BRED "\e[0;31m"

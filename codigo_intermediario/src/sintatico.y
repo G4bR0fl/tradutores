@@ -8,6 +8,7 @@
     #include "../lib/arvore.h"
     #include "../lib/pilha.h"
     #include "../lib/semantic_utils.h"
+    #include "../lib/tac.h"
 
     #define BRED "\e[0;31m"
     #define BMAG "\e[1;35m"
@@ -37,6 +38,9 @@
     int table_index = 0; // Indexes symbol_table;
     int table_size = 0; // Adds up by +1 when a new symbol is added on the symbol_table;
     tree* root; // First tree node(only reachable when the tree complete);
+
+    // TAC Globals
+    int string_idx = 0; // Variable to increment global string variables in TAC
     
 %}  
 
@@ -160,9 +164,13 @@ var_declaration:
         $$->node2->line = $2.line;
         $$->node2->column = $2.columns;
         $$->node2->var_scope = get_stack_top(&scope_stack); 
-
         strcpy($$->node2->type, $1.body);
         assign_types($$->node2, symbol_table, &scope_stack); 
+
+        if(strcmp($$->node2->type, "int") == 0 || strcmp($$->node2->type, "float") == 0){
+            $$->is_symbol = 1;
+            sprintf($$->tac_symbol, "%s %s_%d", $$->node2->type, $$->node2->type_name, $$->var_scope);
+        }
     }
 ;
 
@@ -323,6 +331,12 @@ param:
         strcpy($$->node2->type, $1.body);
         assign_types($$->node2, symbol_table, &scope_stack);
         $$->node2->var_scope = get_stack_top(&scope_stack);
+
+        if(strcmp($$->node2->type, "int") == 0 || strcmp($$->node2->type, "float") == 0){
+            $$->is_symbol = 1;
+            sprintf($$->tac_symbol, "%s %s_%d", $$->node2->type, $$->node2->type_name, $$->var_scope);
+        }
+
         pop(&scope_stack);
         scope--;
     }
@@ -359,6 +373,12 @@ param:
         $$->node2->var_scope = get_stack_top(&scope_stack);
         strcpy($$->node2->type, list_string);
         assign_types($$->node2, symbol_table, &scope_stack);
+
+        if(strcmp($$->node2->type, "int list") == 0 || strcmp($$->node2->type, "float list") == 0){
+            $$->is_symbol = 1;
+            sprintf($$->tac_symbol, "%s %s_%d",  $$->node2->type, $$->node2->type_name, $$->var_scope);
+        }
+
         pop(&scope_stack);
         scope--;
     }
@@ -514,6 +534,11 @@ print:
         $$->node2 = create_node($3.body);
         $$->line = $1.line;
         $$->column = $1.columns;
+        
+        $$->is_symbol = 1;
+        sprintf($$->tac_symbol, "char _str%d[] = %s", string_idx, $3.body);
+        string_idx++;
+        
     }
     | OUTPUT '(' expression ')' ';' {
         $$ = create_node("print");
@@ -542,7 +567,7 @@ scan:
     }
 ;
 
-expression:
+expression: 
     ID '=' expression {
         $$ = create_node("expression");
         $$->node1 = create_node($1.body);
@@ -555,6 +580,10 @@ expression:
         search_undeclared_node($$->node1, symbol_table, &scope_stack);
         assign_types($$->node1, symbol_table, &scope_stack);
         evaluate_assignment($$->node1, $$, $$->node3);
+
+        // if(strcmp($$->is_const)){
+        //     $$->is_const =
+        // }
 
     } 
     | simple_expression {$$ = $1;}
@@ -770,6 +799,21 @@ void yyerror(const char* msg){
     errors++;
 }
 
+void new_tac_file(){
+    FILE *fp = fopen("output.tac", "w+");
+    if(fp){
+        // Symbol table
+        fprintf (fp, ".table\n");
+        write_symbol_table(root, fp);
+        // Effective Code
+        fprintf (fp, "\n.code\n");
+    }
+    else{
+        printf("Error, could not write TAC file.\n");
+    }
+    fclose(fp);
+}
+
 int main(int argc, char ** argv) {
     init_stack(&scope_stack);
     init_aux_list(auxiliary_list);
@@ -792,6 +836,7 @@ int main(int argc, char ** argv) {
     if(errors == 0){
         printf(BCYAN"No sintatic errors detected. Printing tree and throwing possible semantic errors.\n" RESET);
         print_tree(root, 0);
+        new_tac_file();
         free_node(root);
     }
     fclose(yyin);    

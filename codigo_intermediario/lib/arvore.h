@@ -18,6 +18,12 @@ struct Tree {
     int line;
     int is_function;
     char type[100];
+    // Tac functionalities
+    int is_symbol;
+    char tac_symbol[100000];
+    int is_const;
+    char tac_const[100000];
+    
 };
 
 tree* create_node(char* type_name);

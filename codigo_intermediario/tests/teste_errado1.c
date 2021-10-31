@@ -10,12 +10,13 @@ int main(int a){
 	float g;
 	g = bi(1.3);
 	float list b;
+	
 	return 0;;
 	a + NIL;
 	b >= a;
 	read(b);
 	a - b * a;
-
+	a =;
 }
 int i;
 int i;

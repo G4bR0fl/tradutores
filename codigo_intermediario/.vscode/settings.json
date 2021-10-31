@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "tac.h": "c",
+        "stdlib.h": "c",
+        "tabela.h": "c"
+    }
+}

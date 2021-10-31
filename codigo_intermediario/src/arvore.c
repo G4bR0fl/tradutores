@@ -17,6 +17,16 @@ tree* create_node(char* type_name){
     main_node->node3 = NULL;
     main_node->node4 = NULL;
     main_node->node5 = NULL;
+    main_node->var_scope = 0;
+    main_node->column = 0;
+    main_node->line = 0;
+    main_node->is_function = 0;
+    strcpy(main_node->type, "");
+    // TAC functinalities
+    main_node->is_symbol = 0;
+    strcpy(main_node->tac_symbol, "");
+    main_node->is_const = 0;
+    strcpy(main_node->tac_const, "");
 
     return main_node;
 }
