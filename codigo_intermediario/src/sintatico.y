@@ -41,6 +41,7 @@
 
     // TAC Globals
     int string_idx = 0; // Variable to increment global string variables in TAC
+    int reg_idx = 0; // Variable to incremental global register counter in TAC
     
 %}  
 
@@ -535,10 +536,18 @@ print:
         $$->line = $1.line;
         $$->column = $1.columns;
         
+        // TAC - Partially done. Still need to figure out how to print whole strings and pass it to '.code' section
         $$->is_symbol = 1;
         sprintf($$->tac_symbol, "char _str%d[] = %s", string_idx, $3.body);
+
+        if(strcmp($$->node1->type_name, "write") == 0){
+            sprintf($$->node1->tac_code, "print _str%d", string_idx);
+        } else if(strcmp($$->node1->type_name, "writeln") == 0){
+            sprintf($$->node1->tac_code, "println _str%d", string_idx);
+        }
+
+
         string_idx++;
-        
     }
     | OUTPUT '(' expression ')' ';' {
         $$ = create_node("print");
@@ -547,6 +556,13 @@ print:
         $$->line = $1.line;
         $$->column = $1.columns;
         evaluate_read_write($$, $$->node2);
+
+        // TAC - Does not print complex expressions like: a*b*c
+        if(strcmp($$->node1->type_name, "write") == 0){
+            sprintf($$->node1->tac_code, "print %s", $$->node2->tac_const);
+        } else if(strcmp($$->node1->type_name, "writeln") == 0){
+            sprintf($$->node1->tac_code, "println %s", $$->node2->tac_const);
+        }
     }
 ;
 
@@ -564,6 +580,14 @@ scan:
         assign_types($$->node2, symbol_table, &scope_stack);
         search_undeclared_node($$->node2, symbol_table, &scope_stack);
         evaluate_read_write($$, $$->node2);
+
+        // TAC - Done
+        if(strcmp($$->node2->type, "int") == 0){
+            sprintf($$->node1->tac_code, "scani %s_%d", $$->node2->type_name, $$->node2->var_scope);
+        } else if(strcmp($$->node2->type, "float") == 0){
+            sprintf($$->node1->tac_code, "scanf %s_%d", $$->node2->type_name, $$->node2->var_scope);
+        }
+
     }
 ;
 
@@ -581,9 +605,24 @@ expression:
         assign_types($$->node1, symbol_table, &scope_stack);
         evaluate_assignment($$->node1, $$, $$->node3);
 
-        // if(strcmp($$->is_const)){
-        //     $$->is_const =
-        // }
+        printf("-------------------------------------------\n");       
+        printf(BCYAN"Node Scope: %d\n" RESET, $$->var_scope);
+        printf("Lside type: %s\n", $$->type);
+        printf("Rside name: %s\n", $$->node3->type_name);
+        // printf("ID: %s_%d\n", $1.body, $$->var_scope);
+        printf("Rside ID: %s\n", $$->node3->tac_const);
+        printf("-------------------------------------------\n");  
+
+        // TAC - if right side is any ID, it generates 2 registers, otherwise it brings a temp register from another expression
+        // Adjust 'if' statement, some assignments are being made with empty registers
+        if(strcmp($$->type, "") != 0){
+            sprintf($$->node1->tac_const, "%s_%d", $1.body, $$->node1->var_scope);
+            if($$->node3->is_const){
+                sprintf($$->tac_code, "mov %s, %s", $$->node1->tac_const, $$->node3->tac_const);
+            } else {
+                sprintf($$->tac_code, "mov %s, $%d", $$->node1->tac_const, $$->node3->tac_reg);
+            }
+        }
 
     } 
     | simple_expression {$$ = $1;}
@@ -655,6 +694,111 @@ relational_expression:
         $$->line = $2.line;
         $$->column = $2.columns;
         evaluate_relational($$->node1, $$, $$->node3);
+
+        printf("-------------------------------------------\n");       
+        printf(BCYAN"RELATIONAL SCOPE: %d\n" RESET, $$->var_scope);
+        printf("RELATIONAL TYPE: %s\n", $$->type);
+        printf("LSide OP: %s\n", $$->node1->type_name);
+        printf("RSide OP: %s\n", $$->node3->type_name);
+        printf("Lside ID: %s\n", $$->node1->tac_const);
+        printf("Rside ID: %s\n", $$->node3->tac_const);
+        printf("Main node: %s\n", $$->type_name);
+        printf("-------------------------------------------\n");
+
+        // TAC
+        $$->is_expression = 1;
+        if(strcmp($$->node2->type_name, "<") == 0){
+            $$->tac_reg = reg_idx++;
+            // Case: relational_exp(node1)
+            if(!$$->node1->is_const){
+                if($$->node3->is_const){ // relational_exp < ID
+                    sprintf($$->tac_code, "slt $%d, $%d, %s", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_const);
+                } else { // relational_exp < relational_exp
+                    sprintf($$->tac_code, "slt $%d, $%d, $%d", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_reg);
+                }
+            } else { // Case ID(node1)
+                if($$->node3->is_const){ // ID < ID
+                    sprintf($$->tac_code, "slt $%d, %s, %s", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_const);
+                } else { // ID < relational_exp
+                    sprintf($$->tac_code, "slt $%d, %s, $%d", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_reg);
+                }
+            }
+        } else if(strcmp($$->node2->type_name, "<=") == 0){
+            // Case: relational_exp(node1)
+            if(!$$->node1->is_const){
+                if($$->node3->is_const){ // relational_exp <= ID
+                    sprintf($$->tac_code, "sleq $%d, $%d, %s", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_const);
+                } else { // relational_exp <= relational_exp
+                    sprintf($$->tac_code, "sleq $%d, $%d, $%d", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_reg);
+                }
+            } else { // Case ID(node1)
+                if($$->node3->is_const){ // ID <= ID
+                    sprintf($$->tac_code, "sleq $%d, %s, %s", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_const);
+                } else { // ID <= relational_exp
+                    sprintf($$->tac_code, "sleq $%d, %s, $%d", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_reg);
+                }
+            }
+        } else if(strcmp($$->node2->type_name, ">") == 0){
+            // Case: relational_exp(node1)
+            if(!$$->node1->is_const){
+                if($$->node3->is_const){ // relational_exp (-1)<= ID
+                    sprintf($$->tac_code, "sleq $%d, $%d, %s\nnot $%d, $%d", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_const, $$->tac_reg, $$->tac_reg);
+                } else { // relational_exp (-1)<= relational_exp
+                    sprintf($$->tac_code, "sleq $%d, $%d, $%d\nnot $%d, $%d", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_reg, $$->tac_reg, $$->tac_reg);
+                }
+            } else { // Case ID(node1)
+                if($$->node3->is_const){ // ID (-1)<= ID
+                    sprintf($$->tac_code, "sleq $%d, %s, %s\nnot $%d, $%d", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_const, $$->tac_reg, $$->tac_reg);
+                } else { // ID (-1)<= relational_exp
+                    sprintf($$->tac_code, "sleq $%d, %s, $%d\nnot $%d, $%d", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_reg, $$->tac_reg, $$->tac_reg);
+                }
+            }
+        } else if(strcmp($$->node2->type_name, ">=") == 0){
+            // Case: relational_exp(node1)
+            if(!$$->node1->is_const){
+                if($$->node3->is_const){ // relational_exp (-1) < ID
+                    sprintf($$->tac_code, "slt $%d, $%d, %s\nnot $%d, $%d", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_const, $$->tac_reg, $$->tac_reg);
+                } else { // relational_exp (-1)< relational_exp
+                    sprintf($$->tac_code, "slt $%d, $%d, $%d\nnot $%d, $%d", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_reg, $$->tac_reg, $$->tac_reg);
+                }
+            } else { // Case ID(node1)
+                if($$->node3->is_const){ // ID (-1)< ID
+                    sprintf($$->tac_code, "slt $%d, %s, %s\nnot $%d, $%d", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_const, $$->tac_reg, $$->tac_reg);
+                } else { // ID (-1)< relational_exp
+                    sprintf($$->tac_code, "slt $%d, %s, $%d\nnot $%d, $%d", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_reg, $$->tac_reg, $$->tac_reg);
+                }
+            }
+        } else if(strcmp($$->node2->type_name, "!=") == 0){
+            // Case: relational_exp(node1)
+            if(!$$->node1->is_const){
+                if($$->node3->is_const){ // relational_exp (-1) == ID
+                    sprintf($$->tac_code, "seq $%d, $%d, %s\nnot $%d, $%d", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_const, $$->tac_reg, $$->tac_reg);
+                } else { // relational_exp (-1)== relational_exp
+                    sprintf($$->tac_code, "seq $%d, $%d, $%d\nnot $%d, $%d", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_reg, $$->tac_reg, $$->tac_reg);
+                }
+            } else { // Case ID(node1)
+                if($$->node3->is_const){ // ID (-1)== ID
+                    sprintf($$->tac_code, "seq $%d, %s, %s\nnot $%d, $%d", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_const, $$->tac_reg, $$->tac_reg);
+                } else { // ID (-1)== relational_exp
+                    sprintf($$->tac_code, "seq $%d, %s, $%d\nnot $%d, $%d", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_reg, $$->tac_reg, $$->tac_reg);
+                }
+            }
+        } else if(strcmp($$->node2->type_name, "==") == 0){
+            // Case: relational_exp(node1)
+            if(!$$->node1->is_const){
+                if($$->node3->is_const){ // relational_exp == ID
+                    sprintf($$->tac_code, "seq $%d, $%d, %s", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_const);
+                } else { // relational_exp == relational_exp
+                    sprintf($$->tac_code, "seq $%d, $%d, $%d", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_reg);
+                }
+            } else { // Case ID(node1)
+                if($$->node3->is_const){ // ID == ID
+                    sprintf($$->tac_code, "seq $%d, %s, %s", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_const);
+                } else { // ID == relational_exp
+                    sprintf($$->tac_code, "seq $%d, %s, $%d", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_reg);
+                }
+            }
+        }
     }
     | arithmetic_expression {$$ = $1;}
 ;
@@ -670,6 +814,53 @@ arithmetic_expression:
         $$->column = $2.columns;
 
         evaluate_arithmetic($$->node1, $$, $$->node3);
+
+        // printf("-------------------------------------------\n");       
+        // printf(BCYAN"ARITHMETIC SCOPE: %d\n" RESET, $$->var_scope);
+        // printf("ARITHMETIC TYPE: %s\n", $$->type);
+        // printf("LSide OP: %s\n", $$->node1->type_name);
+        // printf("RSide OP: %s\n", $$->node3->type_name);
+        // printf("Lside ID: %s\n", $$->node1->tac_const);
+        // printf("Rside ID: %s\n", $$->node3->tac_const);
+        // printf("Main node: %s\n", $$->type_name);
+        // printf("-------------------------------------------\n");  
+
+
+        // TAC - Almost done - Casting isn't done
+        $$->is_expression = 1;
+        if(strcmp($$->node2->type_name, "+") == 0){
+            $$->tac_reg = reg_idx++;
+            // Case: Arithmetic(node1)
+            if(!$$->node1->is_const){
+                if($$->node3->is_const){ // Arithmetic + ID
+                    sprintf($$->tac_code, "add $%d, $%d, %s", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_const);
+                } else { // Arithmetic + Arithmetic
+                    sprintf($$->tac_code, "add $%d, $%d, $%d", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_reg);
+                }
+            } else { // Case ID(node1)
+                if($$->node3->is_const){ // ID + ID
+                    sprintf($$->tac_code, "add $%d, %s, %s", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_const);
+                } else { // ID + Arithmetic
+                    sprintf($$->tac_code, "add $%d, %s, $%d", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_reg);
+                }
+            }
+        } else if(strcmp($$->node2->type_name, "-") == 0){
+            $$->tac_reg = reg_idx++;
+            // Case: Arithmetic(node1)
+            if(!$$->node1->is_const){
+                if($$->node3->is_const){ // Arithmetic - ID
+                    sprintf($$->tac_code, "sub $%d, $%d, %s", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_const);
+                } else { // Arithmetic - Arithmetic
+                    sprintf($$->tac_code, "sub $%d, $%d, $%d", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_reg);
+                }
+            } else { // Case ID(node1)
+                if($$->node3->is_const){ // ID - ID
+                    sprintf($$->tac_code, "sub $%d, %s, %s", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_const);
+                } else { // ID - Arithmetic
+                    sprintf($$->tac_code, "sub $%d, %s, $%d", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_reg);
+                }
+            }
+        }
     } 
     | term {$$ = $1;}
 ;
@@ -685,6 +876,43 @@ term:
         $$->column = $2.columns;
 
         evaluate_mult_div($$->node1, $$, $$->node3);
+
+        // TAC - Almost done - No casting
+        $$->is_expression = 1;
+        if(strcmp($$->node2->type_name, "*") == 0){
+            $$->tac_reg = reg_idx++;
+            // Case: term(node1)
+            if(!$$->node1->is_const){
+                if($$->node3->is_const){ // term * ID
+                    sprintf($$->tac_code, "mul $%d, $%d, %s", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_const);
+                } else { // term * term
+                    sprintf($$->tac_code, "mul $%d, $%d, $%d", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_reg);
+                }
+            } else { // Case ID(node1)
+                if($$->node3->is_const){ // ID + ID
+                    sprintf($$->tac_code, "mul $%d, %s, %s", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_const);
+                } else { // ID + term
+                    sprintf($$->tac_code, "mul $%d, %s, $%d", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_reg);
+                }
+            }
+        } else if(strcmp($$->node2->type_name, "/") == 0){
+            $$->tac_reg = reg_idx++;
+            // Case: term(node1)
+            if(!$$->node1->is_const){
+                if($$->node3->is_const){ // term / ID
+                    sprintf($$->tac_code, "div $%d, $%d, %s", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_const);
+                } else { // term / term
+                    sprintf($$->tac_code, "div $%d, $%d, $%d", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_reg);
+                }
+            } else { // Case ID(node1)
+                if($$->node3->is_const){ // ID / ID
+                    sprintf($$->tac_code, "div $%d, %s, %s", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_const);
+                } else { // ID / term
+                    sprintf($$->tac_code, "div $%d, %s, $%d", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_reg);
+                }
+            }
+        }
+
     }
     | factor {$$ = $1;}
 ;
@@ -698,6 +926,16 @@ factor:
         $$->column = $1.columns;
         search_undeclared_node($$, symbol_table, &scope_stack);
         assign_types($$, symbol_table, &scope_stack);
+
+
+        // TAC
+        $$->is_const = 1;
+        sprintf($$->tac_const, "%s_%d", $1.body, $$->var_scope);
+        // printf("-------------------------------------------\n");       
+        // printf(BCYAN"FACTOR 'ID_SCOPE': %s\n" RESET, $$->tac_const);
+        // printf("FACTOR TYPE: %s\n", $$->type);
+
+        // printf("-------------------------------------------\n");       
     }
     | INT {
         $$ = create_node($1.body);
@@ -705,6 +943,10 @@ factor:
         $$->column = $1.columns;
         $$->var_scope = get_stack_top(&scope_stack);
         strcpy($$->type, "int"); 
+        
+        // TAC
+        $$->is_const = 1;
+        strcpy($$->tac_const, $$->type_name);
     }
     | FLOAT {
         $$ = create_node($1.body);
@@ -712,6 +954,10 @@ factor:
         $$->column = $1.columns;
         $$->var_scope = get_stack_top(&scope_stack);
         strcpy($$->type, "float");
+
+        // TAC
+        $$->is_const = 1;
+        strcpy($$->tac_const, $$->type_name);
     }
     | ID '(' arguments_list ')' {
         $$ = create_node("factor_arguments");
@@ -807,6 +1053,7 @@ void new_tac_file(){
         write_symbol_table(root, fp);
         // Effective Code
         fprintf (fp, "\n.code\n");
+        write_code(root, fp);
     }
     else{
         printf("Error, could not write TAC file.\n");

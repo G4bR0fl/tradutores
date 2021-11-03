@@ -2,8 +2,11 @@ int main(){
     int a;
     int b;
     int c;
-    c = a + c;
-    write("bibi");
-    writeln("rofl");
-
+    int d;
+    read(a);
+    read(b);
+    read(d);
+    c = a < 5;
+    writeln(c);
+    return 0;
 }

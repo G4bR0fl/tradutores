@@ -19,10 +19,13 @@ struct Tree {
     int is_function;
     char type[100];
     // Tac functionalities
-    int is_symbol;
-    char tac_symbol[100000];
-    int is_const;
-    char tac_const[100000];
+    int is_symbol; // Checks if is a symbol or not
+    char tac_symbol[10000]; // writes symbol table entries
+    int is_const; // checks if something is an ID
+    char tac_const[1000]; // writes ID
+    char tac_code[10000]; // writes TAC code
+    int tac_reg; // Receives the counter from bison
+    int is_expression; // Checks if something is a complex expression
     
 };
 

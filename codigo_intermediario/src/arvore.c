@@ -27,6 +27,9 @@ tree* create_node(char* type_name){
     strcpy(main_node->tac_symbol, "");
     main_node->is_const = 0;
     strcpy(main_node->tac_const, "");
+    strcpy(main_node->tac_code, "");
+    main_node->tac_reg = 0;
+    main_node->is_expression = 0;
 
     return main_node;
 }

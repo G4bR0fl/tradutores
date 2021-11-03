@@ -86,7 +86,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 47 "src/sintatico.y"
+#line 48 "src/sintatico.y"
 
     struct Token {
         int columns;
