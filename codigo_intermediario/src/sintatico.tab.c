@@ -593,9 +593,9 @@ static const yytype_int16 yyrline[] =
      344,   389,   399,   409,   419,   429,   437,   448,   458,   471,
      472,   482,   487,   492,   497,   502,   508,   512,   516,   517,
      521,   522,   523,   524,   525,   526,   527,   532,   552,   570,
-     595,   628,   629,   634,   635,   650,   661,   672,   683,   688,
-     803,   807,   865,   869,   917,   921,   922,   940,   951,   962,
-     975,   982,   986,   992,  1000,  1001,  1007,  1017,  1027
+     595,   634,   635,   640,   641,   692,   724,   738,   751,   756,
+     876,   880,   938,   942,   990,   994,   995,  1013,  1024,  1035,
+    1048,  1055,  1059,  1065,  1073,  1074,  1080,  1090,  1100
 };
 #endif
 
@@ -2806,9 +2806,9 @@ yyreduce:
         evaluate_read_write((yyval.node), (yyval.node)->node2);
 
         // TAC - Does not print complex expressions like: a*b*c
-        if(strcmp((yyval.node)->node1->type_name, "write") == 0){
+        if(strcmp((yyval.node)->node1->type_name, "write") == 0 && (yyval.node)->node2->is_const == 1){
             sprintf((yyval.node)->node1->tac_code, "print %s", (yyval.node)->node2->tac_const);
-        } else if(strcmp((yyval.node)->node1->type_name, "writeln") == 0){
+        } else if(strcmp((yyval.node)->node1->type_name, "writeln") == 0 && (yyval.node)->node2->is_const == 1){
             sprintf((yyval.node)->node1->tac_code, "println %s", (yyval.node)->node2->tac_const);
         }
     }
@@ -2858,8 +2858,10 @@ yyreduce:
         evaluate_assignment((yyval.node)->node1, (yyval.node), (yyval.node)->node3);
 
         printf("-------------------------------------------\n");       
-        printf(BCYAN"Node Scope: %d\n" RESET, (yyval.node)->var_scope);
-        printf("Lside type: %s\n", (yyval.node)->type);
+        printf(BCYAN"Node Name: %s\n" RESET, (yyval.node)->type_name);
+        printf("Lside type: %s\n", (yyval.node)->node1->type);
+        printf("Lside name: %s\n", (yyval.node)->node1->type_name);        
+        printf("Rside type: %s\n", (yyval.node)->node3->type);
         printf("Rside name: %s\n", (yyval.node)->node3->type_name);
         // printf("ID: %s_%d\n", $1.body, $$->var_scope);
         printf("Rside ID: %s\n", (yyval.node)->node3->tac_const);
@@ -2867,39 +2869,43 @@ yyreduce:
 
         // TAC - if right side is any ID, it generates 2 registers, otherwise it brings a temp register from another expression
         // Adjust 'if' statement, some assignments are being made with empty registers
-        if(strcmp((yyval.node)->type, "") != 0){
-            sprintf((yyval.node)->node1->tac_const, "%s_%d", (yyvsp[-2].token).body, (yyval.node)->node1->var_scope);
-            if((yyval.node)->node3->is_const){
-                sprintf((yyval.node)->tac_code, "mov %s, %s", (yyval.node)->node1->tac_const, (yyval.node)->node3->tac_const);
-            } else {
-                sprintf((yyval.node)->tac_code, "mov %s, $%d", (yyval.node)->node1->tac_const, (yyval.node)->node3->tac_reg);
+        if((strcmp((yyval.node)->node1->type, "int list") != 0 && strcmp((yyval.node)->node1->type, "float list") != 0) &&
+            (strcmp((yyval.node)->node3->type, "int list") != 0 && strcmp((yyval.node)->node3->type, "float list") != 0)){
+            if(strcmp((yyval.node)->type, "") != 0){
+                sprintf((yyval.node)->node1->tac_const, "%s_%d", (yyvsp[-2].token).body, (yyval.node)->node1->var_scope);
+                if((yyval.node)->node3->is_const){
+                    sprintf((yyval.node)->tac_code, "mov %s, %s", (yyval.node)->node1->tac_const, (yyval.node)->node3->tac_const);
+                } else {
+                    sprintf((yyval.node)->tac_code, "mov %s, $%d", (yyval.node)->node1->tac_const, (yyval.node)->node3->tac_reg);
+                }
             }
+
         }
 
     }
-#line 2881 "src/sintatico.tab.c"
-    break;
-
-  case 51: /* expression: simple_expression  */
-#line 628 "src/sintatico.y"
-                        {(yyval.node) = (yyvsp[0].node);}
 #line 2887 "src/sintatico.tab.c"
     break;
 
-  case 52: /* expression: error  */
-#line 629 "src/sintatico.y"
-            {yyerrok;}
+  case 51: /* expression: simple_expression  */
+#line 634 "src/sintatico.y"
+                        {(yyval.node) = (yyvsp[0].node);}
 #line 2893 "src/sintatico.tab.c"
     break;
 
-  case 53: /* simple_expression: list_operation  */
-#line 634 "src/sintatico.y"
-                   {(yyval.node) = (yyvsp[0].node);}
+  case 52: /* expression: error  */
+#line 635 "src/sintatico.y"
+            {yyerrok;}
 #line 2899 "src/sintatico.tab.c"
     break;
 
+  case 53: /* simple_expression: list_operation  */
+#line 640 "src/sintatico.y"
+                   {(yyval.node) = (yyvsp[0].node);}
+#line 2905 "src/sintatico.tab.c"
+    break;
+
   case 54: /* simple_expression: simple_expression LOGIC_OP list_operation  */
-#line 635 "src/sintatico.y"
+#line 641 "src/sintatico.y"
                                                 {
         (yyval.node) = create_node("simple_expression");
         (yyval.node)->node1 = (yyvsp[-2].node);
@@ -2910,12 +2916,48 @@ yyreduce:
         (yyval.node)->column = (yyvsp[-1].token).columns;
         
         evaluate_logical((yyval.node)->node1, (yyval.node), (yyval.node)->node3);
+
+        // TAC - No casting is implemented
+        (yyval.node)->is_expression = 1;
+        if(strcmp((yyval.node)->node2->type_name, "&&") == 0){
+            (yyval.node)->tac_reg = reg_idx++;
+            // Case: simple_exp(node1)
+            if(!(yyval.node)->node1->is_const){
+                if((yyval.node)->node3->is_const){ // simple_exp && ID
+                    sprintf((yyval.node)->tac_code, "and $%d, $%d, %s", (yyval.node)->tac_reg, (yyval.node)->node1->tac_reg, (yyval.node)->node3->tac_const);
+                } else { // simple_exp && simple_exp
+                    sprintf((yyval.node)->tac_code, "and $%d, $%d, $%d", (yyval.node)->tac_reg, (yyval.node)->node1->tac_reg, (yyval.node)->node3->tac_reg);
+                }
+            } else { // Case ID(node1)
+                if((yyval.node)->node3->is_const){ // ID && ID
+                    sprintf((yyval.node)->tac_code, "and $%d, %s, %s", (yyval.node)->tac_reg, (yyval.node)->node1->tac_const, (yyval.node)->node3->tac_const);
+                } else { // ID && simple_ex
+                    sprintf((yyval.node)->tac_code, "and $%d, %s, $%d", (yyval.node)->tac_reg, (yyval.node)->node1->tac_const, (yyval.node)->node3->tac_reg);
+                }
+            }
+        } if(strcmp((yyval.node)->node2->type_name, "||") == 0){
+            (yyval.node)->tac_reg = reg_idx++;
+            // Case: simple_exp(node1)
+            if(!(yyval.node)->node1->is_const){
+                if((yyval.node)->node3->is_const){ // simple_exp || ID
+                    sprintf((yyval.node)->tac_code, "or $%d, $%d, %s", (yyval.node)->tac_reg, (yyval.node)->node1->tac_reg, (yyval.node)->node3->tac_const);
+                } else { // simple_exp || simple_exp
+                    sprintf((yyval.node)->tac_code, "or $%d, $%d, $%d", (yyval.node)->tac_reg, (yyval.node)->node1->tac_reg, (yyval.node)->node3->tac_reg);
+                }
+            } else { // Case ID(node1)
+                if((yyval.node)->node3->is_const){ // ID || ID
+                    sprintf((yyval.node)->tac_code, "or $%d, %s, %s", (yyval.node)->tac_reg, (yyval.node)->node1->tac_const, (yyval.node)->node3->tac_const);
+                } else { // ID || simple_ex
+                    sprintf((yyval.node)->tac_code, "or $%d, %s, $%d", (yyval.node)->tac_reg, (yyval.node)->node1->tac_const, (yyval.node)->node3->tac_reg);
+                }
+            }
+        }
     }
-#line 2915 "src/sintatico.tab.c"
+#line 2957 "src/sintatico.tab.c"
     break;
 
   case 55: /* list_operation: relational_expression MAP list_operation  */
-#line 650 "src/sintatico.y"
+#line 692 "src/sintatico.y"
                                              {
         (yyval.node) = create_node("list_operation");
         (yyval.node)->node1 = (yyvsp[-2].node);
@@ -2926,12 +2968,33 @@ yyreduce:
         (yyval.node)->column = (yyvsp[-1].token).columns;
 
         evaluate_list_exp((yyval.node)->node1, (yyval.node), (yyval.node)->node3, (yyval.node)->node2);
+
+        // TAC - Nothing yet
+        (yyval.node)->is_expression = 1;
+        // if(strcmp($$->node2->type_name) == 0){
+        //     $$->tac_reg = reg_idx++;
+        //     // Case: list_op(node1)
+        //     if(!$$->node1->is_const){
+        //         if($$->node3->is_const){ // list_op || ID
+        //             sprintf($$->tac_code, "or $%d, $%d, %s", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_const);
+        //         } else { // list_op || list_op
+        //             sprintf($$->tac_code, "or $%d, $%d, $%d", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_reg);
+        //         }
+        //     } else { // Case ID(node1)
+        //         if($$->node3->is_const){ // ID || ID
+        //             sprintf($$->tac_code, "or $%d, %s, %s", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_const);
+        //         } else { // ID || list_op
+        //             sprintf($$->tac_code, "or $%d, %s, $%d", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_reg);
+        //         }
+        //     }
+        // }
+
     }
-#line 2931 "src/sintatico.tab.c"
+#line 2994 "src/sintatico.tab.c"
     break;
 
   case 56: /* list_operation: relational_expression FILTER list_operation  */
-#line 661 "src/sintatico.y"
+#line 724 "src/sintatico.y"
                                                   {
         (yyval.node) = create_node("list_operation");
         (yyval.node)->node1 = (yyvsp[-2].node);
@@ -2942,12 +3005,15 @@ yyreduce:
         (yyval.node)->column = (yyvsp[-1].token).columns;
 
         evaluate_list_exp((yyval.node)->node1, (yyval.node), (yyval.node)->node3, (yyval.node)->node2);
+        // TAC - Nothing yet
+        (yyval.node)->is_expression = 1;
+        
     }
-#line 2947 "src/sintatico.tab.c"
+#line 3013 "src/sintatico.tab.c"
     break;
 
   case 57: /* list_operation: relational_expression BINARY_CONSTRUCTOR list_operation  */
-#line 672 "src/sintatico.y"
+#line 738 "src/sintatico.y"
                                                               {
         (yyval.node) = create_node("list_operation");
         (yyval.node)->node1 = (yyvsp[-2].node);
@@ -2958,18 +3024,20 @@ yyreduce:
         (yyval.node)->column = (yyvsp[-1].token).columns;
 
         evaluate_list_exp((yyval.node)->node1, (yyval.node), (yyval.node)->node3, (yyval.node)->node2);
+        // TAC - Nothing yet
+        (yyval.node)->is_expression = 1;
     }
-#line 2963 "src/sintatico.tab.c"
+#line 3031 "src/sintatico.tab.c"
     break;
 
   case 58: /* list_operation: relational_expression  */
-#line 683 "src/sintatico.y"
+#line 751 "src/sintatico.y"
                             {(yyval.node) = (yyvsp[0].node);}
-#line 2969 "src/sintatico.tab.c"
+#line 3037 "src/sintatico.tab.c"
     break;
 
   case 59: /* relational_expression: relational_expression BINARY_COMP_OP arithmetic_expression  */
-#line 688 "src/sintatico.y"
+#line 756 "src/sintatico.y"
                                                                {
         (yyval.node) = create_node("relational_expression");
         (yyval.node)->node1 = (yyvsp[-2].node);
@@ -2980,15 +3048,15 @@ yyreduce:
         (yyval.node)->column = (yyvsp[-1].token).columns;
         evaluate_relational((yyval.node)->node1, (yyval.node), (yyval.node)->node3);
 
-        printf("-------------------------------------------\n");       
-        printf(BCYAN"RELATIONAL SCOPE: %d\n" RESET, (yyval.node)->var_scope);
-        printf("RELATIONAL TYPE: %s\n", (yyval.node)->type);
-        printf("LSide OP: %s\n", (yyval.node)->node1->type_name);
-        printf("RSide OP: %s\n", (yyval.node)->node3->type_name);
-        printf("Lside ID: %s\n", (yyval.node)->node1->tac_const);
-        printf("Rside ID: %s\n", (yyval.node)->node3->tac_const);
-        printf("Main node: %s\n", (yyval.node)->type_name);
-        printf("-------------------------------------------\n");
+        // printf("-------------------------------------------\n");       
+        // printf(BCYAN"RELATIONAL SCOPE: %d\n" RESET, $$->var_scope);
+        // printf("RELATIONAL TYPE: %s\n", $$->type);
+        // printf("LSide OP: %s\n", $$->node1->type_name);
+        // printf("RSide OP: %s\n", $$->node3->type_name);
+        // printf("Lside ID: %s\n", $$->node1->tac_const);
+        // printf("Rside ID: %s\n", $$->node3->tac_const);
+        // printf("Main node: %s\n", $$->type_name);
+        // printf("-------------------------------------------\n");
 
         // TAC
         (yyval.node)->is_expression = 1;
@@ -3009,6 +3077,7 @@ yyreduce:
                 }
             }
         } else if(strcmp((yyval.node)->node2->type_name, "<=") == 0){
+            (yyval.node)->tac_reg = reg_idx++;
             // Case: relational_exp(node1)
             if(!(yyval.node)->node1->is_const){
                 if((yyval.node)->node3->is_const){ // relational_exp <= ID
@@ -3019,11 +3088,12 @@ yyreduce:
             } else { // Case ID(node1)
                 if((yyval.node)->node3->is_const){ // ID <= ID
                     sprintf((yyval.node)->tac_code, "sleq $%d, %s, %s", (yyval.node)->tac_reg, (yyval.node)->node1->tac_const, (yyval.node)->node3->tac_const);
-                } else { // ID <= relational_exp
+                } else { // ID <= relational_expArithmetic and relational exp done, still need to cast
                     sprintf((yyval.node)->tac_code, "sleq $%d, %s, $%d", (yyval.node)->tac_reg, (yyval.node)->node1->tac_const, (yyval.node)->node3->tac_reg);
                 }
             }
         } else if(strcmp((yyval.node)->node2->type_name, ">") == 0){
+            (yyval.node)->tac_reg = reg_idx++;
             // Case: relational_exp(node1)
             if(!(yyval.node)->node1->is_const){
                 if((yyval.node)->node3->is_const){ // relational_exp (-1)<= ID
@@ -3039,6 +3109,7 @@ yyreduce:
                 }
             }
         } else if(strcmp((yyval.node)->node2->type_name, ">=") == 0){
+            (yyval.node)->tac_reg = reg_idx++;
             // Case: relational_exp(node1)
             if(!(yyval.node)->node1->is_const){
                 if((yyval.node)->node3->is_const){ // relational_exp (-1) < ID
@@ -3054,6 +3125,7 @@ yyreduce:
                 }
             }
         } else if(strcmp((yyval.node)->node2->type_name, "!=") == 0){
+            (yyval.node)->tac_reg = reg_idx++;
             // Case: relational_exp(node1)
             if(!(yyval.node)->node1->is_const){
                 if((yyval.node)->node3->is_const){ // relational_exp (-1) == ID
@@ -3069,6 +3141,7 @@ yyreduce:
                 }
             }
         } else if(strcmp((yyval.node)->node2->type_name, "==") == 0){
+            (yyval.node)->tac_reg = reg_idx++;
             // Case: relational_exp(node1)
             if(!(yyval.node)->node1->is_const){
                 if((yyval.node)->node3->is_const){ // relational_exp == ID
@@ -3085,17 +3158,17 @@ yyreduce:
             }
         }
     }
-#line 3089 "src/sintatico.tab.c"
+#line 3162 "src/sintatico.tab.c"
     break;
 
   case 60: /* relational_expression: arithmetic_expression  */
-#line 803 "src/sintatico.y"
+#line 876 "src/sintatico.y"
                             {(yyval.node) = (yyvsp[0].node);}
-#line 3095 "src/sintatico.tab.c"
+#line 3168 "src/sintatico.tab.c"
     break;
 
   case 61: /* arithmetic_expression: arithmetic_expression BINARY_BASIC_OP1 term  */
-#line 807 "src/sintatico.y"
+#line 880 "src/sintatico.y"
                                                 {
         (yyval.node) = create_node("arithmetic_expression");
         (yyval.node)->node1 = (yyvsp[-2].node);
@@ -3154,17 +3227,17 @@ yyreduce:
             }
         }
     }
-#line 3158 "src/sintatico.tab.c"
+#line 3231 "src/sintatico.tab.c"
     break;
 
   case 62: /* arithmetic_expression: term  */
-#line 865 "src/sintatico.y"
+#line 938 "src/sintatico.y"
            {(yyval.node) = (yyvsp[0].node);}
-#line 3164 "src/sintatico.tab.c"
+#line 3237 "src/sintatico.tab.c"
     break;
 
   case 63: /* term: term BINARY_BASIC_OP2 factor  */
-#line 869 "src/sintatico.y"
+#line 942 "src/sintatico.y"
                                  {
         (yyval.node) = create_node("term");
         (yyval.node)->node1 = (yyvsp[-2].node);
@@ -3213,23 +3286,23 @@ yyreduce:
         }
 
     }
-#line 3217 "src/sintatico.tab.c"
+#line 3290 "src/sintatico.tab.c"
     break;
 
   case 64: /* term: factor  */
-#line 917 "src/sintatico.y"
+#line 990 "src/sintatico.y"
              {(yyval.node) = (yyvsp[0].node);}
-#line 3223 "src/sintatico.tab.c"
+#line 3296 "src/sintatico.tab.c"
     break;
 
   case 65: /* factor: '(' expression ')'  */
-#line 921 "src/sintatico.y"
+#line 994 "src/sintatico.y"
                        {(yyval.node) = (yyvsp[-1].node);}
-#line 3229 "src/sintatico.tab.c"
+#line 3302 "src/sintatico.tab.c"
     break;
 
   case 66: /* factor: ID  */
-#line 922 "src/sintatico.y"
+#line 995 "src/sintatico.y"
          {
         (yyval.node) = create_node((yyvsp[0].token).body);
         (yyval.node)->var_scope = get_stack_top(&scope_stack);
@@ -3248,11 +3321,11 @@ yyreduce:
 
         // printf("-------------------------------------------\n");       
     }
-#line 3252 "src/sintatico.tab.c"
+#line 3325 "src/sintatico.tab.c"
     break;
 
   case 67: /* factor: INT  */
-#line 940 "src/sintatico.y"
+#line 1013 "src/sintatico.y"
           {
         (yyval.node) = create_node((yyvsp[0].token).body);
         (yyval.node)->line = (yyvsp[0].token).line;
@@ -3264,11 +3337,11 @@ yyreduce:
         (yyval.node)->is_const = 1;
         strcpy((yyval.node)->tac_const, (yyval.node)->type_name);
     }
-#line 3268 "src/sintatico.tab.c"
+#line 3341 "src/sintatico.tab.c"
     break;
 
   case 68: /* factor: FLOAT  */
-#line 951 "src/sintatico.y"
+#line 1024 "src/sintatico.y"
             {
         (yyval.node) = create_node((yyvsp[0].token).body);
         (yyval.node)->line = (yyvsp[0].token).line;
@@ -3280,11 +3353,11 @@ yyreduce:
         (yyval.node)->is_const = 1;
         strcpy((yyval.node)->tac_const, (yyval.node)->type_name);
     }
-#line 3284 "src/sintatico.tab.c"
+#line 3357 "src/sintatico.tab.c"
     break;
 
   case 69: /* factor: ID '(' arguments_list ')'  */
-#line 962 "src/sintatico.y"
+#line 1035 "src/sintatico.y"
                                 {
         (yyval.node) = create_node("factor_arguments");
         (yyval.node)->node1 = create_node((yyvsp[-3].token).body);
@@ -3298,11 +3371,11 @@ yyreduce:
         search_undeclared_node((yyval.node)->node1, symbol_table, &scope_stack);
         assign_types((yyval.node)->node1, symbol_table, &scope_stack);
     }
-#line 3302 "src/sintatico.tab.c"
+#line 3375 "src/sintatico.tab.c"
     break;
 
   case 70: /* factor: LIST_CONSTANT  */
-#line 975 "src/sintatico.y"
+#line 1048 "src/sintatico.y"
                     {
         (yyval.node) = create_node((yyvsp[0].token).body);
         (yyval.node)->line = (yyvsp[0].token).line;
@@ -3310,52 +3383,52 @@ yyreduce:
         (yyval.node)->var_scope = get_stack_top(&scope_stack);
         strcpy((yyval.node)->type, "NIL");
     }
-#line 3314 "src/sintatico.tab.c"
+#line 3387 "src/sintatico.tab.c"
     break;
 
   case 71: /* factor: unary_factor  */
-#line 982 "src/sintatico.y"
+#line 1055 "src/sintatico.y"
                    {(yyval.node) = (yyvsp[0].node);}
-#line 3320 "src/sintatico.tab.c"
+#line 3393 "src/sintatico.tab.c"
     break;
 
   case 72: /* arguments: arguments_list ',' expression  */
-#line 986 "src/sintatico.y"
+#line 1059 "src/sintatico.y"
                                   {
         (yyval.node) = create_node("arguments");
         (yyval.node)->node1 = (yyvsp[-2].node);
         (yyval.node)->node2 = (yyvsp[0].node); 
         arg_counter++;
     }
-#line 3331 "src/sintatico.tab.c"
+#line 3404 "src/sintatico.tab.c"
     break;
 
   case 73: /* arguments: expression  */
-#line 992 "src/sintatico.y"
+#line 1065 "src/sintatico.y"
                  {
         (yyval.node) = create_node("arguments");
         (yyval.node)->node1 = (yyvsp[0].node);
         arg_counter++;
     }
-#line 3341 "src/sintatico.tab.c"
+#line 3414 "src/sintatico.tab.c"
     break;
 
   case 74: /* arguments_list: arguments  */
-#line 1000 "src/sintatico.y"
+#line 1073 "src/sintatico.y"
               {(yyval.node) = (yyvsp[0].node);}
-#line 3347 "src/sintatico.tab.c"
+#line 3420 "src/sintatico.tab.c"
     break;
 
   case 75: /* arguments_list: %empty  */
-#line 1001 "src/sintatico.y"
+#line 1074 "src/sintatico.y"
              {
         (yyval.node) = create_node("empty");
     }
-#line 3355 "src/sintatico.tab.c"
+#line 3428 "src/sintatico.tab.c"
     break;
 
   case 76: /* unary_factor: BINARY_BASIC_OP1 factor  */
-#line 1007 "src/sintatico.y"
+#line 1080 "src/sintatico.y"
                             {
         (yyval.node) = create_node("unary_factor");
         (yyval.node)->node1 = create_node((yyvsp[-1].token).body);
@@ -3366,11 +3439,11 @@ yyreduce:
 
         evaluate_unary((yyval.node)->node1, (yyval.node), (yyval.node)->node2);
     }
-#line 3370 "src/sintatico.tab.c"
+#line 3443 "src/sintatico.tab.c"
     break;
 
   case 77: /* unary_factor: TAIL factor  */
-#line 1017 "src/sintatico.y"
+#line 1090 "src/sintatico.y"
                  {
         (yyval.node) = create_node("unary_factor");
         (yyval.node)->node1 = create_node((yyvsp[-1].token).body);
@@ -3381,11 +3454,11 @@ yyreduce:
 
         evaluate_unary((yyval.node)->node1, (yyval.node), (yyval.node)->node2);
     }
-#line 3385 "src/sintatico.tab.c"
+#line 3458 "src/sintatico.tab.c"
     break;
 
   case 78: /* unary_factor: HEADER factor  */
-#line 1027 "src/sintatico.y"
+#line 1100 "src/sintatico.y"
                    {
         (yyval.node) = create_node("unary_factor");
         (yyval.node)->node1 = create_node((yyvsp[-1].token).body);
@@ -3396,11 +3469,11 @@ yyreduce:
 
         evaluate_unary((yyval.node)->node1, (yyval.node), (yyval.node)->node2);
     }
-#line 3400 "src/sintatico.tab.c"
+#line 3473 "src/sintatico.tab.c"
     break;
 
 
-#line 3404 "src/sintatico.tab.c"
+#line 3477 "src/sintatico.tab.c"
 
       default: break;
     }
@@ -3625,7 +3698,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 1039 "src/sintatico.y"
+#line 1112 "src/sintatico.y"
 
 
 void yyerror(const char* msg){

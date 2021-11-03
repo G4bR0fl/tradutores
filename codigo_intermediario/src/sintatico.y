@@ -558,9 +558,9 @@ print:
         evaluate_read_write($$, $$->node2);
 
         // TAC - Does not print complex expressions like: a*b*c
-        if(strcmp($$->node1->type_name, "write") == 0){
+        if(strcmp($$->node1->type_name, "write") == 0 && $$->node2->is_const == 1){
             sprintf($$->node1->tac_code, "print %s", $$->node2->tac_const);
-        } else if(strcmp($$->node1->type_name, "writeln") == 0){
+        } else if(strcmp($$->node1->type_name, "writeln") == 0 && $$->node2->is_const == 1){
             sprintf($$->node1->tac_code, "println %s", $$->node2->tac_const);
         }
     }
@@ -606,22 +606,28 @@ expression:
         evaluate_assignment($$->node1, $$, $$->node3);
 
         printf("-------------------------------------------\n");       
-        printf(BCYAN"Node Scope: %d\n" RESET, $$->var_scope);
-        printf("Lside type: %s\n", $$->type);
+        printf(BCYAN"Node Name: %s\n" RESET, $$->type_name);
+        printf("Lside type: %s\n", $$->node1->type);
+        printf("Lside name: %s\n", $$->node1->type_name);        
+        printf("Rside type: %s\n", $$->node3->type);
         printf("Rside name: %s\n", $$->node3->type_name);
         // printf("ID: %s_%d\n", $1.body, $$->var_scope);
         printf("Rside ID: %s\n", $$->node3->tac_const);
         printf("-------------------------------------------\n");  
 
         // TAC - if right side is any ID, it generates 2 registers, otherwise it brings a temp register from another expression
-        // Adjust 'if' statement, some assignments are being made with empty registers
-        if(strcmp($$->type, "") != 0){
-            sprintf($$->node1->tac_const, "%s_%d", $1.body, $$->node1->var_scope);
-            if($$->node3->is_const){
-                sprintf($$->tac_code, "mov %s, %s", $$->node1->tac_const, $$->node3->tac_const);
-            } else {
-                sprintf($$->tac_code, "mov %s, $%d", $$->node1->tac_const, $$->node3->tac_reg);
+        // List aren't being tested on this, skipping those types.
+        if((strcmp($$->node1->type, "int list") != 0 && strcmp($$->node1->type, "float list") != 0) &&
+            (strcmp($$->node3->type, "int list") != 0 && strcmp($$->node3->type, "float list") != 0)){
+            if(strcmp($$->type, "") != 0){
+                sprintf($$->node1->tac_const, "%s_%d", $1.body, $$->node1->var_scope);
+                if($$->node3->is_const){
+                    sprintf($$->tac_code, "mov %s, %s", $$->node1->tac_const, $$->node3->tac_const);
+                } else {
+                    sprintf($$->tac_code, "mov %s, $%d", $$->node1->tac_const, $$->node3->tac_reg);
+                }
             }
+
         }
 
     } 
@@ -642,6 +648,42 @@ simple_expression:
         $$->column = $2.columns;
         
         evaluate_logical($$->node1, $$, $$->node3);
+
+        // TAC - No casting is implemented
+        $$->is_expression = 1;
+        if(strcmp($$->node2->type_name, "&&") == 0){
+            $$->tac_reg = reg_idx++;
+            // Case: simple_exp(node1)
+            if(!$$->node1->is_const){
+                if($$->node3->is_const){ // simple_exp && ID
+                    sprintf($$->tac_code, "and $%d, $%d, %s", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_const);
+                } else { // simple_exp && simple_exp
+                    sprintf($$->tac_code, "and $%d, $%d, $%d", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_reg);
+                }
+            } else { // Case ID(node1)
+                if($$->node3->is_const){ // ID && ID
+                    sprintf($$->tac_code, "and $%d, %s, %s", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_const);
+                } else { // ID && simple_ex
+                    sprintf($$->tac_code, "and $%d, %s, $%d", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_reg);
+                }
+            }
+        } if(strcmp($$->node2->type_name, "||") == 0){
+            $$->tac_reg = reg_idx++;
+            // Case: simple_exp(node1)
+            if(!$$->node1->is_const){
+                if($$->node3->is_const){ // simple_exp || ID
+                    sprintf($$->tac_code, "or $%d, $%d, %s", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_const);
+                } else { // simple_exp || simple_exp
+                    sprintf($$->tac_code, "or $%d, $%d, $%d", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_reg);
+                }
+            } else { // Case ID(node1)
+                if($$->node3->is_const){ // ID || ID
+                    sprintf($$->tac_code, "or $%d, %s, %s", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_const);
+                } else { // ID || simple_ex
+                    sprintf($$->tac_code, "or $%d, %s, $%d", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_reg);
+                }
+            }
+        }
     }
 ;   
 
@@ -657,6 +699,27 @@ list_operation:
         $$->column = $2.columns;
 
         evaluate_list_exp($$->node1, $$, $$->node3, $$->node2);
+
+        // TAC - Nothing yet
+        $$->is_expression = 1;
+        // if(strcmp($$->node2->type_name) == 0){
+        //     $$->tac_reg = reg_idx++;
+        //     // Case: list_op(node1)
+        //     if(!$$->node1->is_const){
+        //         if($$->node3->is_const){ // list_op || ID
+        //             sprintf($$->tac_code, "or $%d, $%d, %s", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_const);
+        //         } else { // list_op || list_op
+        //             sprintf($$->tac_code, "or $%d, $%d, $%d", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_reg);
+        //         }
+        //     } else { // Case ID(node1)
+        //         if($$->node3->is_const){ // ID || ID
+        //             sprintf($$->tac_code, "or $%d, %s, %s", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_const);
+        //         } else { // ID || list_op
+        //             sprintf($$->tac_code, "or $%d, %s, $%d", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_reg);
+        //         }
+        //     }
+        // }
+
     }
     | relational_expression FILTER list_operation {
         $$ = create_node("list_operation");
@@ -668,6 +731,9 @@ list_operation:
         $$->column = $2.columns;
 
         evaluate_list_exp($$->node1, $$, $$->node3, $$->node2);
+        // TAC - Nothing yet
+        $$->is_expression = 1;
+        
     }
     | relational_expression BINARY_CONSTRUCTOR list_operation {
         $$ = create_node("list_operation");
@@ -679,6 +745,8 @@ list_operation:
         $$->column = $2.columns;
 
         evaluate_list_exp($$->node1, $$, $$->node3, $$->node2);
+        // TAC - Nothing yet
+        $$->is_expression = 1;
     }
     | relational_expression {$$ = $1;}
 ;
@@ -695,15 +763,15 @@ relational_expression:
         $$->column = $2.columns;
         evaluate_relational($$->node1, $$, $$->node3);
 
-        printf("-------------------------------------------\n");       
-        printf(BCYAN"RELATIONAL SCOPE: %d\n" RESET, $$->var_scope);
-        printf("RELATIONAL TYPE: %s\n", $$->type);
-        printf("LSide OP: %s\n", $$->node1->type_name);
-        printf("RSide OP: %s\n", $$->node3->type_name);
-        printf("Lside ID: %s\n", $$->node1->tac_const);
-        printf("Rside ID: %s\n", $$->node3->tac_const);
-        printf("Main node: %s\n", $$->type_name);
-        printf("-------------------------------------------\n");
+        // printf("-------------------------------------------\n");       
+        // printf(BCYAN"RELATIONAL SCOPE: %d\n" RESET, $$->var_scope);
+        // printf("RELATIONAL TYPE: %s\n", $$->type);
+        // printf("LSide OP: %s\n", $$->node1->type_name);
+        // printf("RSide OP: %s\n", $$->node3->type_name);
+        // printf("Lside ID: %s\n", $$->node1->tac_const);
+        // printf("Rside ID: %s\n", $$->node3->tac_const);
+        // printf("Main node: %s\n", $$->type_name);
+        // printf("-------------------------------------------\n");
 
         // TAC
         $$->is_expression = 1;
@@ -724,6 +792,7 @@ relational_expression:
                 }
             }
         } else if(strcmp($$->node2->type_name, "<=") == 0){
+            $$->tac_reg = reg_idx++;
             // Case: relational_exp(node1)
             if(!$$->node1->is_const){
                 if($$->node3->is_const){ // relational_exp <= ID
@@ -734,11 +803,12 @@ relational_expression:
             } else { // Case ID(node1)
                 if($$->node3->is_const){ // ID <= ID
                     sprintf($$->tac_code, "sleq $%d, %s, %s", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_const);
-                } else { // ID <= relational_exp
+                } else { // ID <= relational_expArithmetic and relational exp done, still need to cast
                     sprintf($$->tac_code, "sleq $%d, %s, $%d", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_reg);
                 }
             }
         } else if(strcmp($$->node2->type_name, ">") == 0){
+            $$->tac_reg = reg_idx++;
             // Case: relational_exp(node1)
             if(!$$->node1->is_const){
                 if($$->node3->is_const){ // relational_exp (-1)<= ID
@@ -754,6 +824,7 @@ relational_expression:
                 }
             }
         } else if(strcmp($$->node2->type_name, ">=") == 0){
+            $$->tac_reg = reg_idx++;
             // Case: relational_exp(node1)
             if(!$$->node1->is_const){
                 if($$->node3->is_const){ // relational_exp (-1) < ID
@@ -769,6 +840,7 @@ relational_expression:
                 }
             }
         } else if(strcmp($$->node2->type_name, "!=") == 0){
+            $$->tac_reg = reg_idx++;
             // Case: relational_exp(node1)
             if(!$$->node1->is_const){
                 if($$->node3->is_const){ // relational_exp (-1) == ID
@@ -784,6 +856,7 @@ relational_expression:
                 }
             }
         } else if(strcmp($$->node2->type_name, "==") == 0){
+            $$->tac_reg = reg_idx++;
             // Case: relational_exp(node1)
             if(!$$->node1->is_const){
                 if($$->node3->is_const){ // relational_exp == ID
