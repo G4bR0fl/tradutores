@@ -16,7 +16,6 @@ int main(int a){
 	b >= a;
 	read(b);
 	a - b * a;
-	a =;
 }
 int i;
 int i;

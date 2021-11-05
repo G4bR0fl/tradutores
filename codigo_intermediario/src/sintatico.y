@@ -605,15 +605,15 @@ expression:
         assign_types($$->node1, symbol_table, &scope_stack);
         evaluate_assignment($$->node1, $$, $$->node3);
 
-        printf("-------------------------------------------\n");       
-        printf(BCYAN"Node Name: %s\n" RESET, $$->type_name);
-        printf("Lside type: %s\n", $$->node1->type);
-        printf("Lside name: %s\n", $$->node1->type_name);        
-        printf("Rside type: %s\n", $$->node3->type);
-        printf("Rside name: %s\n", $$->node3->type_name);
-        // printf("ID: %s_%d\n", $1.body, $$->var_scope);
-        printf("Rside ID: %s\n", $$->node3->tac_const);
-        printf("-------------------------------------------\n");  
+        // printf("-------------------------------------------\n");       
+        // printf(BCYAN"Node Name: %s\n" RESET, $$->type_name);
+        // printf("Lside type: %s\n", $$->node1->type);
+        // printf("Lside name: %s\n", $$->node1->type_name);        
+        // printf("Rside type: %s\n", $$->node3->type);
+        // printf("Rside name: %s\n", $$->node3->type_name);
+        // // printf("ID: %s_%d\n", $1.body, $$->var_scope);
+        // printf("Rside ID: %s\n", $$->node3->tac_const);
+        // printf("-------------------------------------------\n");  
 
         // TAC - if right side is any ID, it generates 2 registers, otherwise it brings a temp register from another expression
         // List aren't being tested on this, skipping those types.
@@ -627,9 +627,7 @@ expression:
                     sprintf($$->tac_code, "mov %s, $%d", $$->node1->tac_const, $$->node3->tac_reg);
                 }
             }
-
         }
-
     } 
     | simple_expression {$$ = $1;}
     | error {yyerrok;}
@@ -901,16 +899,21 @@ arithmetic_expression:
 
         // TAC - Almost done - Casting isn't done
         $$->is_expression = 1;
+        printf("Node1: %s\n",$$->node1->type_name);
+        printf("Node1 is const: %d\n",$$->node1->is_const);
+        printf("Node2: %s\n",$$->node2->type_name);
+        printf("Node3: %s\n",$$->node3->type_name);
+        printf("Node3 is const: %d\n",$$->node3->is_const);
         if(strcmp($$->node2->type_name, "+") == 0){
             $$->tac_reg = reg_idx++;
-            // Case: Arithmetic(node1)
+            // Case: Arithmetic(node1) 
             if(!$$->node1->is_const){
                 if($$->node3->is_const){ // Arithmetic + ID
                     sprintf($$->tac_code, "add $%d, $%d, %s", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_const);
                 } else { // Arithmetic + Arithmetic
                     sprintf($$->tac_code, "add $%d, $%d, $%d", $$->tac_reg, $$->node1->tac_reg, $$->node3->tac_reg);
                 }
-            } else { // Case ID(node1)
+            } else { // ID(node1)
                 if($$->node3->is_const){ // ID + ID
                     sprintf($$->tac_code, "add $%d, %s, %s", $$->tac_reg, $$->node1->tac_const, $$->node3->tac_const);
                 } else { // ID + Arithmetic

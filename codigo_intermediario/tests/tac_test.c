@@ -1,12 +1,7 @@
 int main(){
     int a;
     int b;
-    int c;
-    int d;
-    read(a);
-    read(b);
-    read(d);
-    c = a < 5;
-    writeln(c);
+    a = 5;
+    b = a + 2.7;
     return 0;
 }

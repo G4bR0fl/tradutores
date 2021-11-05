@@ -30,6 +30,9 @@ void write_code(tree* node, FILE *fp){
     }
 }
 
+void write_string(FILE *fp){
+    
+}
 // void arithmetic_cast(tree* left_arg, tree* right_arg){
 //     if(!left_arg || !right_arg) return;
 //     if((strcmp(left_arg->type, "float") == 0 && strcmp(right_arg->type, "float") != 0)){
